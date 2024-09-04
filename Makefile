@@ -1,3 +1,6 @@
+# Define the current directory as GOPATH
+GOPATH := $(shell pwd)
+
 # Detect current OS
 UNAME_S := $(shell uname -s)
 
@@ -43,11 +46,11 @@ build:
 
 	@if [ "$(ARCH)" != "unknown" ] && [ "$(OS)" != "unknown" ]; then \
 	   echo "Building pocket-admin for $(OS) $(ARCH)"; \
-	   GOOS=$(OS) GOARCH=$(ARCH) CGO_ENABLED=0 go build; \
+	   GOOS=$(OS) GOARCH=$(ARCH) CGO_ENABLED=0 go build -o pocket-admin main.go; \
     fi
 
 init:
-	go mod init github.com/trustos/pocket-admin && go mod tidy
+	go mod init pocket-admin && go mod tidy
 
 serve:
 	go run main.go serve

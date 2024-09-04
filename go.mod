@@ -1,4 +1,4 @@
-module github.com/trustos/pocket-admin
+module pocket-admin
 
 go 1.23.0
 

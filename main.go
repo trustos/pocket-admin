@@ -7,8 +7,8 @@ import (
 	"strings"
 	"time"
 	"net/http"
-	"github.com/trustos/pocket-admin/ui"
 
+	"pocket-admin/ui"
 	"github.com/labstack/echo/v5"
 	"github.com/labstack/echo/v5/middleware"
 	"github.com/pocketbase/pocketbase"
