@@ -39,6 +39,7 @@
 		"bits-ui": "^0.21.13",
 		"clsx": "^2.1.1",
 		"lucide-svelte": "^0.438.0",
+		"pocketbase": "^0.21.5",
 		"svelte": "^4.2.19",
 		"svelte-radix": "^1.1.1",
 		"tailwind-merge": "^2.5.2",

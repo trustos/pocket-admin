@@ -1,14 +1,16 @@
 package main
 
 import (
+	"fmt"
 	"log"
+	"net/http"
 	"os"
 	"path/filepath"
 	"strings"
 	"time"
-	"net/http"
 
 	"pocket-admin/ui"
+
 	"github.com/labstack/echo/v5"
 	"github.com/labstack/echo/v5/middleware"
 	"github.com/pocketbase/pocketbase"
@@ -20,6 +22,23 @@ import (
 )
 
 const pocketAdminPath = "/admin/"
+
+func redirectMiddleware(app core.App) echo.MiddlewareFunc {
+	return func(next echo.HandlerFunc) echo.HandlerFunc {
+		return func(c echo.Context) error {
+			// skip redirect checks for non-root level index.html requests
+			path := c.Request().URL.Path
+			fmt.Println()
+			fmt.Println(path)
+
+			// if path != pocketAdminPath && path != pocketAdminPath+"index.html" {
+			// 	return next(c)
+			// }
+
+			return next(c)
+		}
+	}
+}
 
 func bindStaticCMSAdminUI(app core.App, e *core.ServeEvent) error {
 	// redirect to trailing slash to ensure that relative urls will still work properly
@@ -34,6 +53,7 @@ func bindStaticCMSAdminUI(app core.App, e *core.ServeEvent) error {
 	e.Router.GET(
 		pocketAdminPath+"*",
 		echo.StaticDirectoryHandler(ui.DistDirFS, false),
+		redirectMiddleware(app),
 		middleware.Gzip(),
 	)
 
