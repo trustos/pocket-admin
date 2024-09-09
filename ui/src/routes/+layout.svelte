@@ -8,7 +8,6 @@
 	import Package2 from 'lucide-svelte/icons/package-2';
 	import PanelLeft from 'lucide-svelte/icons/panel-left';
 	import Search from 'lucide-svelte/icons/search';
-	import Settings from 'lucide-svelte/icons/settings';
 	import ShoppingCart from 'lucide-svelte/icons/shopping-cart';
 	import UsersRound from 'lucide-svelte/icons/users-round';
 
@@ -17,20 +16,17 @@
 	import * as DropdownMenu from '$lib/shadcn/components/ui/dropdown-menu';
 	import { Input } from '$lib/shadcn/components/ui/input';
 	import * as Sheet from '$lib/shadcn/components/ui/sheet';
-	import * as Tooltip from '$lib/shadcn/components/ui/tooltip';
 
 	import { Nav } from '$lib/components/nav';
 
 	import placeholderUser from '$lib/images/placeholder-user.jpg';
 
 	export let data: LayoutData;
-
-	console.log(data);
 </script>
 
 <div class="flex min-h-screen w-full flex-col bg-muted/40">
 	<aside class="fixed inset-y-0 left-0 z-10 hidden w-14 flex-col border-r bg-background sm:flex">
-		<Nav />
+		<Nav menu={data.menu} />
 	</aside>
 	<div class="flex flex-col sm:gap-4 sm:py-4 sm:pl-14">
 		<header
