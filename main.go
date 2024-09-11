@@ -22,24 +22,22 @@ import (
 
 const pocketAdminPath = "/admin/"
 
-// func redirectMiddleware(app core.App) echo.MiddlewareFunc {
-// 	return func(next echo.HandlerFunc) echo.HandlerFunc {
-// 		return func(c echo.Context) error {
-// 			// skip redirect checks for non-root level index.html requests
-// 			path := c.Request().URL.Path
-// 			fmt.Println()
-// 			fmt.Println(path)
+func indexFallbackMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
+	return func(c echo.Context) error {
+		err := next(c)
+		if err != nil {
+			// Check if the error is a "not found" error
+			he, ok := err.(*echo.HTTPError)
+			if ok && he.Code == http.StatusNotFound {
+				// Serve the SvelteKit app index.html file
+				return c.File("ui/dist/index.html")
+			}
+		}
+		return err
+	}
+}
 
-// 			// if path != pocketAdminPath && path != pocketAdminPath+"index.html" {
-// 			// 	return next(c)
-// 			// }
-
-// 			return next(c)
-// 		}
-// 	}
-// }
-
-func bindStaticCMSAdminUI(app core.App, e *core.ServeEvent) error {
+func bindStaticCMSAdminUI(e *core.ServeEvent) error {
 	// redirect to trailing slash to ensure that relative urls will still work properly
 	e.Router.GET(
 		strings.TrimRight(pocketAdminPath, "/"),
@@ -52,7 +50,6 @@ func bindStaticCMSAdminUI(app core.App, e *core.ServeEvent) error {
 	e.Router.GET(
 		pocketAdminPath+"*",
 		echo.StaticDirectoryHandler(ui.DistDirFS, false),
-		// redirectMiddleware(app),
 		middleware.Gzip(),
 	)
 
@@ -160,9 +157,13 @@ func main() {
 	})
 
 	app.OnBeforeServe().Add(func(e *core.ServeEvent) error {
-		bindStaticCMSAdminUI(app, e)
+		bindStaticCMSAdminUI(e)
 		// serves static files from the provided public dir (if exists)
 		e.Router.GET("/*", apis.StaticDirectoryHandler(os.DirFS(publicDir), indexFallback))
+
+		// Add the index fallback middleware
+		e.Router.Use(indexFallbackMiddleware)
+
 		return nil
 	})
 

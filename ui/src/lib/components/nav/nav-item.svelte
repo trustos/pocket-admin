@@ -23,7 +23,7 @@
 		<a href={`${base}${item.href}`} class={classes()} use:builder.action {...builder}>
 			<svelte:component
 				this={item.icon}
-				class={isActive ? ' h-4 w-4 transition-all group-hover:scale-110' : 'h-5 w-5'}
+				class={isActive ? ' h-4 w-4 group-hover:scale-110' : 'h-5 w-5'}
 			/>
 			<span class="sr-only">{item.name || ''}</span>
 		</a>
