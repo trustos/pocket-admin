@@ -13,6 +13,7 @@
 		<NavItem {item} />
 	{/each}
 </nav>
+
 <nav class="mt-auto flex flex-col items-center gap-4 px-2 py-4">
 	{#each bottomMenu as item}
 		<NavItem {item} />

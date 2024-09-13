@@ -6,8 +6,12 @@
 	import type { Menu } from '$lib/types';
 	import { base } from '$app/paths';
 	import { page } from '$app/stores';
+	import { removeTrailingSlash } from '$lib/helpers';
 
-	$: isActive = (href: string) => $page.route.id == href;
+	// $: isActive = (href: string) => $page.route.id == href;
+
+	$: isActive = (href: string) =>
+		removeTrailingSlash($page.url.pathname) == `${base}${href !== '/' ? href : ''}`;
 
 	export let menu: Menu[];
 </script>

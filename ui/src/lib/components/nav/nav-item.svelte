@@ -3,7 +3,10 @@
 	import { page } from '$app/stores';
 	import { type Menu } from '$lib/types';
 	import { base } from '$app/paths';
-	$: isActive = $page.route.id == item.href;
+	import { removeTrailingSlash } from '$lib/helpers';
+
+	$: isActive =
+		removeTrailingSlash($page.url.pathname) == `${base}${item.href !== '/' ? item.href : ''}`;
 
 	$: classes = () => {
 		const baseClasses = 'flex h-9 w-9 items-center justify-center md:h-8 md:w-8';

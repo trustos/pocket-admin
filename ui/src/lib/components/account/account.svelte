@@ -4,6 +4,9 @@
 	import { Button } from '$lib/shadcn/components/ui/button';
 	import UserRound from 'lucide-svelte/icons/user-round';
 	import { goto } from '$app/navigation';
+	import { user } from '$lib/stores';
+
+	console.log($user);
 
 	const logoutHandler = () => {
 		pb.logout();
@@ -18,7 +21,7 @@
 		</Button>
 	</DropdownMenu.Trigger>
 	<DropdownMenu.Content align="end">
-		<DropdownMenu.Label>My Account</DropdownMenu.Label>
+		<DropdownMenu.Label>{$user?.name}</DropdownMenu.Label>
 		<DropdownMenu.Separator />
 		<DropdownMenu.Item>Settings</DropdownMenu.Item>
 		<DropdownMenu.Item>Support</DropdownMenu.Item>
