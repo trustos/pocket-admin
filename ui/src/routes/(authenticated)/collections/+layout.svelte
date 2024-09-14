@@ -11,7 +11,7 @@
 	const collectionItems = collections.map((collection) => {
 		return {
 			title: collection.name,
-			href: `/admin/collections/${collection.id}`
+			href: `/collections/${collection.id}`
 		};
 	});
 </script>

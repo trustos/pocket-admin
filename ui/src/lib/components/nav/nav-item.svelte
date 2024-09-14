@@ -3,10 +3,17 @@
 	import { page } from '$app/stores';
 	import { type Menu } from '$lib/types';
 	import { base } from '$app/paths';
-	import { removeTrailingSlash } from '$lib/helpers';
+	import { removeTrailingSlash, comparePaths } from '$lib/helpers';
 
-	$: isActive =
-		removeTrailingSlash($page.url.pathname) == `${base}${item.href !== '/' ? item.href : ''}`;
+	// console.log($page.url.pathname);
+	// $: console.log(`${base}${item.href}`);
+
+	// $: console.log($page.url.pathname == `${base}${item.href}`);
+
+	$: isActive = comparePaths($page.url.pathname, item.href);
+	// removeTrailingSlash($page.url.pathname) == removeTrailingSlash(`${base}${item.href}`);
+
+	// removeTrailingSlash($page.url.pathname) == `${base}${item.href !== '/' ? item.href : ''}`;
 
 	$: classes = () => {
 		const baseClasses = 'flex h-9 w-9 items-center justify-center md:h-8 md:w-8';

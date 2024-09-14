@@ -4,6 +4,8 @@
 	import { cn } from '$lib/shadcn/utils';
 	import { page } from '$app/stores';
 	import { Button } from '$lib/shadcn/components/ui/button';
+	import { comparePaths } from '$lib/helpers';
+	import { base } from '$app/paths';
 
 	let className: string | undefined | null = undefined;
 	export let items: { href: string; title: string }[];
@@ -13,19 +15,22 @@
 		duration: 250,
 		easing: cubicInOut
 	});
+
+	$: isActive = (href: string) => comparePaths($page.url.pathname, href);
 </script>
 
 <nav class={cn('flex space-x-2 lg:flex-col lg:space-x-0 lg:space-y-1', className)}>
 	{#each items as item}
-		{@const isActive = $page.url.pathname === item.href}
-
 		<Button
-			href={item.href}
+			href={base + item.href}
 			variant="ghost"
-			class={cn(!isActive && 'hover:underline', 'relative justify-start hover:bg-transparent')}
+			class={cn(
+				!isActive(item.href) && 'hover:underline',
+				'relative justify-start hover:bg-transparent'
+			)}
 			data-sveltekit-noscroll
 		>
-			{#if isActive}
+			{#if isActive(item.href)}
 				<div
 					class="absolute inset-0 rounded-md bg-muted"
 					in:send={{ key: 'active-sidebar-tab' }}
