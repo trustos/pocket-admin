@@ -24,12 +24,15 @@
 		<Button
 			href={base + item.href}
 			variant="ghost"
-			class={cn('relative justify-start hover:bg-gray-200')}
+			class={cn(
+				isActive(item.href) ? 'text-primary-foreground hover:text-primary-foreground' : '',
+				'relative justify-start hover:bg-gray-200'
+			)}
 			data-sveltekit-noscroll
 		>
 			{#if isActive(item.href)}
 				<div
-					class="absolute inset-0 rounded-md bg-gray-200"
+					class="absolute inset-0 rounded-md bg-primary"
 					in:send={{ key: 'active-sidebar-tab' }}
 					out:receive={{ key: 'active-sidebar-tab' }}
 				/>

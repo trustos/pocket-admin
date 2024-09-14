@@ -1,3 +1,5 @@
+import type { RecordModel } from 'pocketbase';
+
 type MenuPosition = 'top' | 'bottom';
 
 export interface Menu {
@@ -5,4 +7,18 @@ export interface Menu {
 	href: string;
 	position: MenuPosition;
 	icon?: unknown;
+}
+
+export interface Collections {
+	recordsCount: number;
+	name: string;
+	id: string;
+	schema: RecordModel[];
+}
+
+export interface Collection {
+	[key: string]: unknown;
+	id: string;
+	created: Date;
+	updated: Date;
 }

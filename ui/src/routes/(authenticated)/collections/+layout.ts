@@ -1,8 +1,10 @@
 import pb from '$lib/pocketbase';
-import type { PageLoad } from './$types';
+import type { LayoutLoad } from './$types';
 
-export const load: PageLoad = async ({ fetch }) => {
-	const collections = await pb.collection('admin_collections').getFullList({ fetch });
+import type { Collections } from '$lib/types';
+
+export const load: LayoutLoad = async ({ fetch }) => {
+	const collections = await pb.collection('admin_collections').getFullList<Collections>({ fetch });
 
 	if (!collections || !collections.length) {
 		return {
@@ -20,7 +22,10 @@ export const load: PageLoad = async ({ fetch }) => {
 				console.log('error', e);
 			}
 
-			return { ...collection, recordsCount };
+			// Add records count to collection
+			collection.recordsCount = recordsCount;
+
+			return collection;
 		})
 	);
 
@@ -28,3 +33,5 @@ export const load: PageLoad = async ({ fetch }) => {
 		collections: updatedCollections || []
 	};
 };
+
+export const prerender = false;

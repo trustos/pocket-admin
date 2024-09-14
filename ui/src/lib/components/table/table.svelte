@@ -5,13 +5,13 @@
 	import type { RecordModel } from 'pocketbase';
 	import { goto } from '$app/navigation';
 	import { base } from '$app/paths';
+	import type { Collections } from '$lib/types';
 
 	const goToCollection = (id: string) => {
 		goto(`${base}/collections/${id}`);
 	};
 
-	export let collections: RecordModel[];
-	console.log(collections);
+	export let collections: Collections[];
 </script>
 
 <Card.Root>
