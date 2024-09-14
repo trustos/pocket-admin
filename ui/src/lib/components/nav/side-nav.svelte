@@ -8,7 +8,7 @@
 	import { base } from '$app/paths';
 
 	let className: string | undefined | null = undefined;
-	export let items: { href: string; title: string }[];
+	export let items: { href: string; title: string; icon: unknown }[];
 	export { className as class };
 
 	const [send, receive] = crossfade({
@@ -24,20 +24,18 @@
 		<Button
 			href={base + item.href}
 			variant="ghost"
-			class={cn(
-				!isActive(item.href) && 'hover:underline',
-				'relative justify-start hover:bg-transparent'
-			)}
+			class={cn('relative justify-start hover:bg-gray-200')}
 			data-sveltekit-noscroll
 		>
 			{#if isActive(item.href)}
 				<div
-					class="absolute inset-0 rounded-md bg-muted"
+					class="absolute inset-0 rounded-md bg-gray-200"
 					in:send={{ key: 'active-sidebar-tab' }}
 					out:receive={{ key: 'active-sidebar-tab' }}
 				/>
 			{/if}
 			<div class="relative">
+				<svelte:component this={item.icon} class="inline w-5" />
 				{item.title}
 			</div>
 		</Button>

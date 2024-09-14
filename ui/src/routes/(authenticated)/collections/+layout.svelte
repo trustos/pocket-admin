@@ -1,17 +1,19 @@
 <script lang="ts">
 	import type { PageData } from './$types';
-	import { Table } from '$lib/components/table';
 	import { SideNav } from '$lib/components/nav';
+	// import { Library, LibraryBig } from 'lucide-svelte/icons';
+	import Library from 'lucide-svelte/icons/library';
+	import SquareLibrary from 'lucide-svelte/icons/square-library';
+	// <SquareLibrary />
 
 	export let data: PageData;
 	const { collections } = data;
 
-	console.log(collections);
-
 	const collectionItems = collections.map((collection) => {
 		return {
 			title: collection.name,
-			href: `/collections/${collection.id}`
+			href: `/collections/${collection.id}`,
+			icon: collection.type == 'base' ? SquareLibrary : ''
 		};
 	});
 </script>

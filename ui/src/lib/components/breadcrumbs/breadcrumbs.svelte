@@ -11,8 +11,6 @@
 			href: '/' + segments.slice(0, index + 1).join('/')
 		}));
 	});
-
-	$: console.log($breadcrumbs);
 </script>
 
 <Breadcrumb.Root class="hidden md:flex">

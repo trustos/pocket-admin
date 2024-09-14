@@ -25,8 +25,6 @@
 				<Table.Row>
 					<Table.Head>Name</Table.Head>
 					<Table.Head class="hidden sm:table-cell">Type</Table.Head>
-					<!-- <Table.Head class="hidden sm:table-cell">Records</Table.Head> -->
-					<!-- <Table.Head class="hidden md:table-cell">Date</Table.Head> -->
 					<Table.Head class="text-right">Count</Table.Head>
 				</Table.Row>
 			</Table.Header>
