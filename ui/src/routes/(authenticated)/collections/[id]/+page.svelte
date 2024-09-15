@@ -6,9 +6,9 @@
 
 	$: ({ collection, schema, title } = data);
 
-	let description = `${title} This is a dynamic table component that renders a list of records based on the provided schema and collection.`;
+	console.log(schema);
 
-	console.log(collection);
+	let description = `${title} This is a dynamic table component that renders a list of records based on the provided schema and collection.`;
 </script>
 
 <DynamicTable bind:description bind:title {schema} {collection} />

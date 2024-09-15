@@ -28,7 +28,7 @@
 	export let item: Menu;
 </script>
 
-<Tooltip.Root>
+<Tooltip.Root duration={0}>
 	<Tooltip.Trigger asChild let:builder>
 		<a href={`${base}${item.href}`} class={classes()} use:builder.action {...builder}>
 			<svelte:component

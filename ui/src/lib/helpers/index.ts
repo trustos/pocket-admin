@@ -14,3 +14,7 @@ export const comparePaths = (currentPagePath: string, hrefPath: string) => {
 		return currentPath.includes(href);
 	}
 };
+
+export const capitalizeFirstLetter = (word: string) => {
+	return word[0].toUpperCase() + word.slice(1);
+};
