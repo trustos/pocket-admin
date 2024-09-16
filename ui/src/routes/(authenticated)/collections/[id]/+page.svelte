@@ -5,10 +5,6 @@
 	export let data: PageData;
 
 	$: ({ collection, schema, title } = data);
-
-	console.log(schema);
-
-	let description = `${title} This is a dynamic table component that renders a list of records based on the provided schema and collection.`;
 </script>
 
-<DynamicTable bind:description bind:title {schema} {collection} />
+<DynamicTable {title} {schema} {collection} />

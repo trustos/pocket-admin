@@ -41,12 +41,6 @@ export const load: LayoutLoad = async ({ url, route, fetch }) => {
 			position: 'top',
 			icon: Database
 		},
-		// {
-		// 	name: 'Profile',
-		// 	href: '/account/login',
-		// 	position: 'top',
-		// 	icon: CircleUser
-		// },
 		{
 			name: 'Settings',
 			href: '/settings',
@@ -61,6 +55,5 @@ export const load: LayoutLoad = async ({ url, route, fetch }) => {
 };
 
 export const prerender = true;
-// export const csr = true;
 export const ssr = false;
 export const trailingSlash = 'always';

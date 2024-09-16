@@ -4,6 +4,7 @@ import type { Collection } from './interfaces';
 export type ListResultCollection = ListResult<Collection>;
 
 export type SchemaFiledType =
+	| 'id'
 	| 'text'
 	| 'editor'
 	| 'file'
@@ -15,3 +16,8 @@ export type SchemaFiledType =
 	| 'select'
 	| 'relation'
 	| 'json';
+
+export type SchemaField = {
+	name: string;
+	type: SchemaFiledType;
+};

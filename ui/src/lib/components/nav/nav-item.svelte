@@ -3,17 +3,9 @@
 	import { page } from '$app/stores';
 	import { type Menu } from '$lib/types';
 	import { base } from '$app/paths';
-	import { removeTrailingSlash, comparePaths } from '$lib/helpers';
-
-	// console.log($page.url.pathname);
-	// $: console.log(`${base}${item.href}`);
-
-	// $: console.log($page.url.pathname == `${base}${item.href}`);
+	import { comparePaths } from '$lib/helpers';
 
 	$: isActive = comparePaths($page.url.pathname, item.href);
-	// removeTrailingSlash($page.url.pathname) == removeTrailingSlash(`${base}${item.href}`);
-
-	// removeTrailingSlash($page.url.pathname) == `${base}${item.href !== '/' ? item.href : ''}`;
 
 	$: classes = () => {
 		const baseClasses = 'flex h-9 w-9 items-center justify-center md:h-8 md:w-8';
@@ -28,7 +20,7 @@
 	export let item: Menu;
 </script>
 
-<Tooltip.Root duration={0}>
+<Tooltip.Root openDelay={100}>
 	<Tooltip.Trigger asChild let:builder>
 		<a href={`${base}${item.href}`} class={classes()} use:builder.action {...builder}>
 			<svelte:component

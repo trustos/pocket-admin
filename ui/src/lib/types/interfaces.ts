@@ -18,7 +18,10 @@ export interface Collections {
 
 export interface Collection {
 	[key: string]: unknown;
+	collectionName: string;
+	collectionId: string;
 	id: string;
 	created: Date;
 	updated: Date;
+	name: string;
 }
