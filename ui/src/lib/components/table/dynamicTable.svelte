@@ -35,15 +35,23 @@
 					</Table.Row>
 				</Table.Header>
 				<Table.Body>
-					{#each collection.items as record}
-						<Table.Row class="cursor-pointer" on:click={() => onRowClick(record.id)}>
-							{#each schema as field}
-								<Table.Cell class="max-w-64">
-									<CellRenderer name={field.name} type={field.type} {record} />
-								</Table.Cell>
-							{/each}
+					{#if !collection.items.length}
+						<Table.Row>
+							<Table.Cell colspan={schema.length} class="bold h-16 text-center">
+								No records found or you have no permission to view this data.
+							</Table.Cell>
 						</Table.Row>
-					{/each}
+					{:else}
+						{#each collection.items as record}
+							<Table.Row class="cursor-pointer" on:click={() => onRowClick(record.id)}>
+								{#each schema as field}
+									<Table.Cell class="max-w-64">
+										<CellRenderer name={field.name} type={field.type} {record} />
+									</Table.Cell>
+								{/each}
+							</Table.Row>
+						{/each}
+					{/if}
 				</Table.Body>
 			</Table.Root>
 		</div>
