@@ -1,8 +1,8 @@
 <script lang="ts">
 	import { createTable, Render, Subscribe, createRender } from 'svelte-headless-table';
-	import { readable } from 'svelte/store';
+	import { readable, writable } from 'svelte/store';
 	import { DataTableActions, DataTableHeader, DataTableCell } from '$lib/components/table';
-	import type { Collections, ColProps, CollectionSchema } from '$lib/types';
+	import type { Collection, Collections, ColProps, CollectionSchema } from '$lib/types';
 	import {
 		addPagination,
 		addSortBy,
@@ -31,11 +31,18 @@
 		'deleteRule'
 	];
 
-	export let data: Collections[] = [];
-	export let schema: CollectionSchema;
+	export let data: Collection[] = [];
+	export let schema: CollectionSchema[] = [];
+	export let title: string = '';
+	export let description: string = '';
 	export let showHeaderIcons: boolean = true;
 
-	const table = createTable(readable(data), {
+	type Column = {
+		name: string;
+		type: string;
+	};
+
+	const table = createTable(writable(data), {
 		page: addPagination(),
 		sort: addSortBy(),
 		filter: addTableFilter({
@@ -43,11 +50,6 @@
 		}),
 		hide: addHiddenColumns()
 	});
-
-	type Column = {
-		name: string;
-		type: string;
-	};
 
 	const colKeys = schema
 		.map((s): Column => ({ name: s.name, type: s.type }))
@@ -69,43 +71,6 @@
 			}
 		};
 	});
-
-	//Add default columns - ID and Actions
-	// cols.unshift({
-	// 	accessor: 'id',
-	// 	// header: 'ID',
-	// 	header: ({ id }) => {
-	// 		return createRender(DataTableHeader, { name: id, type: 'id', showIcons: showHeaderIcons });
-	// 	},
-	// 	cell: ({ id, value, row }) => {
-	// 		return createRender(DataTableCell, { name: id, type: 'id', value, record: row.original });
-	// 	},
-	// 	plugins: {
-	// 		sort: {
-	// 			disable: true
-	// 		}
-	// 	}
-	// });
-
-	// cols.push({
-	// 	accessor: 'created',
-	// 	header: 'Created',
-	// 	plugins: {
-	// 		sort: {
-	// 			disable: false
-	// 		}
-	// 	}
-	// });
-
-	// cols.push({
-	// 	accessor: 'updated',
-	// 	header: 'Updated',
-	// 	plugins: {
-	// 		sort: {
-	// 			disable: false
-	// 		}
-	// 	}
-	// });
 
 	cols.push({
 		accessor: ({ id }) => id,
@@ -147,8 +112,8 @@
 
 <Card.Root>
 	<Card.Header class="px-7">
-		<Card.Title>Collections</Card.Title>
-		<Card.Description>All available collections</Card.Description>
+		<Card.Title>{title}</Card.Title>
+		<Card.Description>{description}</Card.Description>
 	</Card.Header>
 	<Card.Content>
 		<!-- <Separator /> -->

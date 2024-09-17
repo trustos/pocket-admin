@@ -1,5 +1,6 @@
 <script lang="ts">
-	import Common from './common.svelte';
+	import Common from '$lib/components/table/renderers/common.svelte';
+	import NotAvailable from '$lib/components/table/renderers/notAvailable.svelte';
 
 	export let value: string;
 
@@ -36,4 +37,8 @@
 	$: preview = getPreviewText(textContent, 20);
 </script>
 
-<Common value={preview} classes="w-64 block" />
+{#if value}
+	<Common value={preview} classes="w-64 block" />
+{:else}
+	<NotAvailable />
+{/if}

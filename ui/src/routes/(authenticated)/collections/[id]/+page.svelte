@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type { PageData } from './$types';
-	import { DynamicTable, DataTable } from '$lib/components/table';
+	import { DataTable } from '$lib/components/table';
 
 	export let data: PageData;
 
@@ -8,6 +8,6 @@
 	$: items = collection.items;
 </script>
 
-<!-- <DynamicTable {title} {schema} {collection} /> -->
-
-<DataTable {title} {schema} data={items} />
+{#key schema}
+	<DataTable {title} {schema} data={items} />
+{/key}

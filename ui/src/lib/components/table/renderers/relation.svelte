@@ -17,8 +17,6 @@
 	const getValue = (record: Collection, name: string) => {
 		const result = record?.expand && (record?.expand[name as keyof Collection] as RecordModel);
 
-		console.log(result);
-
 		return {
 			value: result?.['name'] || result?.['title'] || result?.id,
 			record: result

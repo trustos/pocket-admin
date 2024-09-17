@@ -8,4 +8,10 @@
 </script>
 
 <!-- <Table {collections} /> -->
-<DataTable data={collections} {schema} showHeaderIcons={false} />
+<DataTable
+	data={collections}
+	{schema}
+	showHeaderIcons={false}
+	title="Collections"
+	description="All available collections"
+/>
