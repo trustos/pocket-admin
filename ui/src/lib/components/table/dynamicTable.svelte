@@ -10,8 +10,6 @@
 	export let schema: SchemaField[];
 	export let collection: ListResultCollection;
 	export let onRowClick: (id: string) => void = () => {};
-
-	console.log(schema);
 </script>
 
 <Card.Root class="w-full">

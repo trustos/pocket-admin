@@ -10,37 +10,11 @@
 		DateRenderer,
 		SelectRenderer,
 		RelationRenderer,
+		JsonRenderer,
 		IdRenderer
 	} from '$lib/components/table/renderers';
 
 	import type { Collection } from '$lib/types';
-
-	// return fieldRenderers[type](value, collection);
-
-	// switch (type) {
-	// 	case 'text':
-	// 	case 'editor':
-	// 	case 'email':
-	// 	case 'url':
-	// 		return `<span class="max-w-xs truncate">${value}</span>`;
-	// 	case 'number':
-	// 		return `<span>${value}</span>`;
-	// 	case 'bool':
-	// 		return `<span class="${value ? 'text-green-500' : 'text-red-500'}">${value ? 'True' : 'False'}</span>`;
-	// 	case 'date':
-	// 		return `<span>${new Date(value as string).toLocaleString()}</span>`;
-	// 	case 'id':
-	// 	case 'select':
-	// 		return `<span class="px-2 py-1 text-xs font-semibold rounded-full bg-gray-200">${value}</span>`;
-	// 	case 'file':
-	// 		return `<span class="text-blue-500 hover:underline">File</span>`;
-	// 	case 'relation':
-	// 		return `<span class="text-purple-500 hover:underline">Relation</span>`;
-	// 	case 'json':
-	// 		return `<span class="font-mono text-sm">${JSON.stringify(value).slice(0, 20)}...</span>`;
-	// 	default:
-	// 		return `<span>${String(value)}</span>`;
-	// }
 
 	export let name: string;
 	export let type: string;
@@ -72,7 +46,7 @@
 </script>
 
 <!-- Use the type guard directly in the if-block to ensure TypeScript narrows the type properly -->
-{#if type === 'text' && isString(getValue(record, name))}
+{#if type === 'text' && isString(value)}
 	<TextRenderer {value} />
 {:else if type === 'editor' && isString(value)}
 	<EditorRenderer {value} />
@@ -93,7 +67,7 @@
 {:else if type === 'select' && isString(value)}
 	<SelectRenderer {value} />
 {:else if type === 'relation' && (isString(value) || isStringArray(value))}
-	<RelationRenderer {value} />
+	<RelationRenderer {value} {record} fieldName={name} />
 {:else}
 	<span>{JSON.stringify(value)}</span>
 {/if}

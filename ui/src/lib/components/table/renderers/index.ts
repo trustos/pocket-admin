@@ -8,6 +8,7 @@ export { default as BoolRenderer } from './bool.svelte';
 export { default as DateRenderer } from './date.svelte';
 export { default as SelectRenderer } from './select.svelte';
 export { default as RelationRenderer } from './relation.svelte';
+export { default as JsonRenderer } from './json.svelte';
 export { default as IdRenderer } from './id.svelte';
 export { default as NotAvailable } from './notAvailable.svelte';
 export { default as CellRenderer } from './cellRenderer.svelte';

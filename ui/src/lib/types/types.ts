@@ -1,4 +1,4 @@
-import type { ListResult } from 'pocketbase';
+import type { ListResult, RecordModel } from 'pocketbase';
 import type { Collection } from './interfaces';
 
 export type ListResultCollection = ListResult<Collection>;
@@ -21,3 +21,5 @@ export type SchemaField = {
 	name: string;
 	type: SchemaFiledType;
 };
+
+export type CollectionSchema = Partial<RecordModel>;

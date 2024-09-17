@@ -16,12 +16,9 @@ export interface Collections {
 	schema: RecordModel[];
 }
 
-export interface Collection {
-	[key: string]: unknown;
+export interface Collection extends RecordModel {
 	collectionName: string;
 	collectionId: string;
 	id: string;
-	created: Date;
-	updated: Date;
 	name: string;
 }
