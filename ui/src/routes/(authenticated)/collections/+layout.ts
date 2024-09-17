@@ -4,11 +4,20 @@ import type { LayoutLoad } from './$types';
 import type { Collections } from '$lib/types';
 
 export const load: LayoutLoad = async ({ fetch }) => {
-	const collections = await pb.collection('admin_collections').getFullList<Collections>({ fetch });
+	const allCollections = await pb
+		.collection('admin_collections')
+		.getFullList<Collections>({ fetch });
 
-	if (!collections || !collections.length) {
+	// Filter out base collections
+	const collections = allCollections.filter((c) => c.type === 'base');
+	const adminCollection = allCollections.find(
+		(c) => c.type === 'view' && c.name === 'admin_collections'
+	);
+
+	if (!allCollections || !allCollections.length) {
 		return {
-			collections: []
+			collections: [],
+			schema: []
 		};
 	}
 
@@ -30,7 +39,8 @@ export const load: LayoutLoad = async ({ fetch }) => {
 	);
 
 	return {
-		collections: updatedCollections || []
+		collections: updatedCollections || [],
+		schema: [...(adminCollection?.schema || []), { name: 'recordsCount' }]
 	};
 };
 

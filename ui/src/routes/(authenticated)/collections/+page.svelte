@@ -1,10 +1,11 @@
 <script lang="ts">
-	import { Table } from '$lib/components/table';
+	import { Table, DataTable } from '$lib/components/table';
 	import type { PageData } from './$types';
 
 	export let data: PageData;
 
-	const { collections } = data;
+	const { collections, schema } = data;
 </script>
 
 <Table {collections} />
+<DataTable data={collections} {schema} showHeaderIcons={false} />
