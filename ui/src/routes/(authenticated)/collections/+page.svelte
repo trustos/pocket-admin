@@ -7,5 +7,5 @@
 	const { collections, schema } = data;
 </script>
 
-<Table {collections} />
+<!-- <Table {collections} /> -->
 <DataTable data={collections} {schema} showHeaderIcons={false} />

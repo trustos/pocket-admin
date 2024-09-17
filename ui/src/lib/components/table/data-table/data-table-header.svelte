@@ -5,8 +5,6 @@
 	export let name: any;
 	export let type: any;
 	export let showIcons: boolean = true;
-
-	console.log(name, type);
 </script>
 
 <span class="text-nowrap">

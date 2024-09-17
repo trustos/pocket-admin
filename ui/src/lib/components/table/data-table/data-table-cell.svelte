@@ -16,13 +16,15 @@
 
 	import type { Collection } from '$lib/types';
 
-	export let name: string;
 	export let type: string;
+	export let value: any;
+	export let name: string;
 	export let record: Collection;
 
 	// Get value from the record based on the field name
 	function getValue(record: Collection, name: string): unknown {
-		return record[name as keyof Collection];
+		// return record[name as keyof Collection];
+		return value;
 	}
 
 	// Type guards
@@ -73,21 +75,3 @@
 {:else}
 	<span>{JSON.stringify(value)}</span>
 {/if}
-
-<!-- #if type === 'text' && isString(getValue(record, name))}
-  <TextRenderer value={getValue(record, name) as string} />
-{:else if type === 'editor' && isString(getValue(record, name))}
-  <EditorRenderer value={getValue(record, name) as string} />
-{:else if type === 'email' && isString(getValue(record, name))}
-  <EmailRenderer value={getValue(record, name) as string} />
-{:else if type === 'url' && isString(getValue(record, name))}
-  <UrlRenderer value={getValue(record, name) as string} />
-{:else if type === 'file'}
-  <FileRenderer value={getValue(record, name)} collection={record} />
-{:else if type === 'number' && isNumber(getValue(record, name))}
-  <NumberRenderer value={getValue(record, name) as number} />
-{:else if type === 'id' && isString(getValue(record, name))}
-  <IdRenderer value={getValue(record, name) as string} />
-{:else}
-  <span>{getValue(record, name)}</span>
-{/if} -->

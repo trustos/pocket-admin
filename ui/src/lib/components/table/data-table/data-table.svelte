@@ -1,14 +1,24 @@
 <script lang="ts">
 	import { createTable, Render, Subscribe, createRender } from 'svelte-headless-table';
 	import { readable } from 'svelte/store';
+	import { DataTableActions, DataTableHeader, DataTableCell } from '$lib/components/table';
+	import type { Collections, ColProps, CollectionSchema } from '$lib/types';
+	import {
+		addPagination,
+		addSortBy,
+		addTableFilter,
+		addHiddenColumns
+	} from 'svelte-headless-table/plugins';
+
 	import * as Card from '$lib/shadcn/components/ui/card';
 	import * as Table from '$lib/shadcn/components/ui/table';
-	import { DataTableActions, DataTableHeader } from '$lib/components/table';
 	import { Button } from '$lib/shadcn/components/ui/button';
-	import { addPagination, addSortBy } from 'svelte-headless-table/plugins';
 	import ArrowUpDown from 'lucide-svelte/icons/arrow-up-down';
-	import type { Collections, ColProps, CollectionSchema } from '$lib/types';
-	import { capitalizeFirstLetter } from '$lib/helpers';
+	import ChevronDown from 'lucide-svelte/icons/chevron-down';
+	import { Input } from '$lib/shadcn/components/ui/input';
+	import * as DropdownMenu from '$lib/shadcn/components/ui/dropdown-menu';
+
+	import { Separator } from '$lib/shadcn/components/ui/separator';
 
 	const excludedColumns = [
 		'collectionId',
@@ -27,7 +37,11 @@
 
 	const table = createTable(readable(data), {
 		page: addPagination(),
-		sort: addSortBy()
+		sort: addSortBy(),
+		filter: addTableFilter({
+			fn: ({ filterValue, value }) => value.toLowerCase().includes(filterValue.toLowerCase())
+		}),
+		hide: addHiddenColumns()
 	});
 
 	type Column = {
@@ -45,6 +59,9 @@
 			header: () => {
 				return createRender(DataTableHeader, { name, type, showIcons: showHeaderIcons });
 			},
+			cell: ({ value, row }) => {
+				return createRender(DataTableCell, { name, type, value, record: row.original });
+			},
 			plugins: {
 				sort: {
 					disable: name === 'id'
@@ -54,18 +71,21 @@
 	});
 
 	//Add default columns - ID and Actions
-	cols.unshift({
-		accessor: 'id',
-		// header: 'ID',
-		header: ({ id }) => {
-			return createRender(DataTableHeader, { name: id, type: 'id', showIcons: showHeaderIcons });
-		},
-		plugins: {
-			sort: {
-				disable: true
-			}
-		}
-	});
+	// cols.unshift({
+	// 	accessor: 'id',
+	// 	// header: 'ID',
+	// 	header: ({ id }) => {
+	// 		return createRender(DataTableHeader, { name: id, type: 'id', showIcons: showHeaderIcons });
+	// 	},
+	// 	cell: ({ id, value, row }) => {
+	// 		return createRender(DataTableCell, { name: id, type: 'id', value, record: row.original });
+	// 	},
+	// 	plugins: {
+	// 		sort: {
+	// 			disable: true
+	// 		}
+	// 	}
+	// });
 
 	// cols.push({
 	// 	accessor: 'created',
@@ -106,10 +126,23 @@
 		return !cell?.state?.columns.find((c) => c.id == cell.id)?.plugins?.sort?.disable;
 	};
 
-	const { headerRows, pageRows, tableAttrs, tableBodyAttrs, pluginStates } =
+	const { headerRows, pageRows, tableAttrs, tableBodyAttrs, pluginStates, flatColumns } =
 		table.createViewModel(columns);
 
 	const { hasNextPage, hasPreviousPage, pageIndex } = pluginStates.page;
+	const { filterValue } = pluginStates.filter;
+	const { hiddenColumnIds } = pluginStates.hide;
+
+	const ids = flatColumns.map((col) => col.id);
+	let hideForId = Object.fromEntries(ids.map((id) => [id, true]));
+
+	$: $hiddenColumnIds = Object.entries(hideForId)
+		.filter(([, hide]) => !hide)
+		.map(([id]) => id);
+
+	const colsForHiding = colKeys.map(({ name }) => name);
+
+	const hidableCols = [...colsForHiding, 'id', 'created', 'updated'];
 </script>
 
 <Card.Root>
@@ -118,6 +151,32 @@
 		<Card.Description>All available collections</Card.Description>
 	</Card.Header>
 	<Card.Content>
+		<!-- <Separator /> -->
+		<div class="flex items-center py-4">
+			<Input
+				class="focus:bg-muted-400 max-w-md bg-muted"
+				placeholder="Filter collections"
+				type="text"
+				bind:value={$filterValue}
+			/>
+			<DropdownMenu.Root>
+				<DropdownMenu.Trigger asChild let:builder>
+					<Button variant="outline" class="ml-auto" builders={[builder]}>
+						Columns <ChevronDown class="ml-2 h-4 w-4" />
+					</Button>
+				</DropdownMenu.Trigger>
+				<DropdownMenu.Content>
+					{#each flatColumns as col}
+						{#if hidableCols.includes(col.id)}
+							<DropdownMenu.CheckboxItem bind:checked={hideForId[col.id]}>
+								{col.id}
+							</DropdownMenu.CheckboxItem>
+						{/if}
+					{/each}
+				</DropdownMenu.Content>
+			</DropdownMenu.Root>
+		</div>
+		<Separator />
 		<Table.Root {...$tableAttrs}>
 			<Table.Header>
 				{#each $headerRows as headerRow}
@@ -128,10 +187,6 @@
 									<Table.Head {...attrs}>
 										{#if isSortableColumn(cell)}
 											<Button variant="ghost" on:click={props.sort.toggle}>
-												<!-- {console.log(
-												cell?.state?.columns.find((c) => c.id == cell.id)?.plugins?.sort?.disable
-											)} -->
-
 												<Render of={cell.render()} />
 												<ArrowUpDown class={'ml-2 h-4 w-4'} />
 											</Button>

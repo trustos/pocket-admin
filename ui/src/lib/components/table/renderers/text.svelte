@@ -6,7 +6,7 @@
 </script>
 
 {#if value}
-	<Common {value}></Common>
+	<Common {value} />
 {:else}
 	<NotAvailable />
 {/if}
