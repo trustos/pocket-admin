@@ -1,8 +1,8 @@
 <script lang="ts">
 	import { createTable, Render, Subscribe, createRender } from 'svelte-headless-table';
-	import { readable, writable } from 'svelte/store';
+	import { readable } from 'svelte/store';
 	import { DataTableActions, DataTableHeader, DataTableCell } from '$lib/components/table';
-	import type { Collection, Collections, ColProps, CollectionSchema } from '$lib/types';
+	import type { Collection, ColProps, CollectionSchema } from '$lib/types';
 	import {
 		addPagination,
 		addSortBy,
@@ -37,12 +37,12 @@
 	export let description: string = '';
 	export let showHeaderIcons: boolean = true;
 
-	type Column = {
-		name: string;
-		type: string;
-	};
+	// type Column = {
+	// 	name: string;
+	// 	type: string;
+	// };
 
-	const table = createTable(writable(data), {
+	const table = createTable(readable(data), {
 		page: addPagination(),
 		sort: addSortBy(),
 		filter: addTableFilter({
@@ -52,30 +52,32 @@
 	});
 
 	const colKeys = schema
-		.map((s): Column => ({ name: s.name, type: s.type }))
+		.map((s) => ({ name: s.name, type: s.type }))
 		.filter((s) => !excludedColumns.includes(s.name));
 
-	const cols: ColProps<Collections>[] = colKeys.map(({ name, type }: Column) => {
-		return {
-			accessor: name,
-			header: () => {
-				return createRender(DataTableHeader, { name, type, showIcons: showHeaderIcons });
-			},
-			cell: ({ value, row }) => {
-				return createRender(DataTableCell, { name, type, value, record: row.original });
-			},
-			plugins: {
-				sort: {
-					disable: name === 'id'
+	const cols: ColProps<Collection>[] = colKeys.map(
+		({ name, type }: { name: string; type: string }) => {
+			return {
+				accessor: name,
+				header: () => {
+					return createRender(DataTableHeader, { name, type, showIcons: showHeaderIcons });
+				},
+				cell: ({ value, row }: { value: unknown; row: { original: Collection } }) => {
+					return createRender(DataTableCell, { name, type, value, record: row.original });
+				},
+				plugins: {
+					sort: {
+						disable: name === 'id'
+					}
 				}
-			}
-		};
-	});
+			};
+		}
+	);
 
 	cols.push({
-		accessor: ({ id }) => id,
+		accessor: ({ id }: { id: string }) => id,
 		header: '',
-		cell: ({ value }) => {
+		cell: ({ value }: { value: string }) => {
 			return createRender(DataTableActions, { id: value });
 		},
 		plugins: {
@@ -86,10 +88,6 @@
 	});
 
 	const columns = table.createColumns(cols.map((col) => table.column(col)));
-
-	const isSortableColumn = (cell) => {
-		return !cell?.state?.columns.find((c) => c.id == cell.id)?.plugins?.sort?.disable;
-	};
 
 	const { headerRows, pageRows, tableAttrs, tableBodyAttrs, pluginStates, flatColumns } =
 		table.createViewModel(columns);
@@ -150,7 +148,7 @@
 							{#each headerRow.cells as cell (cell.id)}
 								<Subscribe attrs={cell.attrs()} let:attrs props={cell.props()} let:props>
 									<Table.Head {...attrs}>
-										{#if isSortableColumn(cell)}
+										{#if !props.sort.disabled}
 											<Button variant="ghost" on:click={props.sort.toggle}>
 												<Render of={cell.render()} />
 												<ArrowUpDown class={'ml-2 h-4 w-4'} />

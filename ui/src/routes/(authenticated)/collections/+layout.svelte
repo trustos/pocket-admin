@@ -1,12 +1,9 @@
 <script lang="ts">
-	import type { PageData } from './$types';
+	import type { LayoutData } from './$types';
 	import { SideNav } from '$lib/components/nav';
-	// import { Library, LibraryBig } from 'lucide-svelte/icons';
-	import Library from 'lucide-svelte/icons/library';
 	import SquareLibrary from 'lucide-svelte/icons/square-library';
-	// <SquareLibrary />
 
-	export let data: PageData;
+	export let data: LayoutData;
 	const { collections } = data;
 
 	const collectionItems = collections.map((collection) => {

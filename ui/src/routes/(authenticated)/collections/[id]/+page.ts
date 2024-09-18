@@ -1,7 +1,8 @@
 import type { PageLoad } from './$types';
-import type { Collection, ListResultCollection, CollectionSchema } from '$lib/types';
+import type { Collection, ListResultCollection } from '$lib/types';
 
 import pb from '$lib/pocketbase';
+import type { RecordModel } from 'pocketbase';
 export const prerender = false;
 
 export const load: PageLoad = async ({ params, fetch, parent }) => {
@@ -10,13 +11,15 @@ export const load: PageLoad = async ({ params, fetch, parent }) => {
 	const collectionWithSchema = collections.find((c) => c.id === params.id);
 
 	const findRelationFields =
-		collectionWithSchema?.schema.filter((c) => c.type === 'relation').map((c) => c.name) || [];
+		(collectionWithSchema?.schema as Partial<RecordModel>[])
+			?.filter((c: Partial<RecordModel>) => c.type === 'relation')
+			.map((c: Partial<RecordModel>) => c.name) || [];
 
 	const collection: ListResultCollection = await pb
 		.collection(params.id)
 		.getList<Collection>(1, 20, { fetch, expand: findRelationFields.join(',') });
 
-	const schema: CollectionSchema[] = [
+	const schema: Partial<RecordModel>[][] = [
 		{ name: 'id', type: 'id' },
 		...(collectionWithSchema?.schema || []),
 		{ name: 'created', type: 'date' },

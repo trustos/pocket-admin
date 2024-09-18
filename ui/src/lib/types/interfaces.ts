@@ -9,16 +9,10 @@ export interface Menu {
 	icon?: unknown;
 }
 
-export interface Collections {
-	recordsCount: number;
-	name: string;
-	id: string;
-	schema: RecordModel[];
-}
-
 export interface Collection extends RecordModel {
 	collectionName: string;
 	collectionId: string;
 	id: string;
 	name: string;
+	recordsCount?: number;
 }

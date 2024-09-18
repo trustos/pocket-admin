@@ -1,12 +1,12 @@
 import pb from '$lib/pocketbase';
 import type { LayoutLoad } from './$types';
 
-import type { Collections } from '$lib/types';
+import type { Collection } from '$lib/types';
 
 export const load: LayoutLoad = async ({ fetch }) => {
 	const allCollections = await pb
 		.collection('admin_collections')
-		.getFullList<Collections>({ fetch });
+		.getFullList<Collection>({ fetch });
 
 	// Filter out base collections
 	const collections = allCollections.filter((c) => c.type === 'base');

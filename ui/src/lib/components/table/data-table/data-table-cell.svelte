@@ -17,7 +17,7 @@
 	import type { Collection } from '$lib/types';
 
 	export let type: string;
-	export let value: any;
+	export let value: number | string | boolean | string[] | Collection | unknown;
 	export let name: string;
 	export let record: Collection;
 
