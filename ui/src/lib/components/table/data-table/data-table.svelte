@@ -26,6 +26,8 @@
 
 	import { Separator } from '$lib/shadcn/components/ui/separator';
 
+	let tableScrolled = false;
+
 	const excludedColumns = [
 		'collectionId',
 		'collectionName',
@@ -213,7 +215,7 @@
 										{@const isLastCol = row.cells[row.cells.length - 1].id == cell.id}
 										<Table.Cell
 											{...attrs}
-											class={`group-hover/table-row:bg-muted [&:has([role=checkbox])]:bg-card ${
+											class={`group-hover/table-row:bg-muted [&:has([data-menu-trigger])]:bg-card [&:has([role=checkbox])]:bg-card ${
 												isFirstCol ? 'sticky left-0 z-10' : isLastCol ? 'sticky right-0 z-10' : ''
 											}`}
 										>
@@ -250,7 +252,8 @@
 </Card.Root>
 
 <style>
-	:global([data-state='selected'] > td:has([role='checkbox'])) {
+	:global([data-state='selected'] > td:has([role='checkbox'])),
+	:global([data-state='selected'] > td:has([data-menu-trigger])) {
 		@apply bg-muted;
 	}
 </style>
