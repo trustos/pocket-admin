@@ -26,8 +26,6 @@
 
 	import { Separator } from '$lib/shadcn/components/ui/separator';
 
-	let tableScrolled = false;
-
 	const excludedColumns = [
 		'collectionId',
 		'collectionName',
@@ -44,6 +42,7 @@
 	export let title: string = '';
 	export let description: string = '';
 	export let showHeaderIcons: boolean = true;
+	export let rowClickCallback: (event: Event, row: Collection) => void = () => {};
 
 	const table = createTable(readable(data), {
 		page: addPagination(),
@@ -205,6 +204,7 @@
 					{#each $pageRows as row (row.id)}
 						<Subscribe rowAttrs={row.attrs()} let:rowAttrs>
 							<Table.Row
+								on:click={(event) => rowClickCallback(event, row.original)}
 								{...rowAttrs}
 								data-state={$selectedDataIds[row.id] && 'selected'}
 								class="group/table-row"
@@ -215,8 +215,12 @@
 										{@const isLastCol = row.cells[row.cells.length - 1].id == cell.id}
 										<Table.Cell
 											{...attrs}
-											class={`group-hover/table-row:bg-muted [&:has([data-menu-trigger])]:bg-card [&:has([role=checkbox])]:bg-card ${
-												isFirstCol ? 'sticky left-0 z-10' : isLastCol ? 'sticky right-0 z-10' : ''
+											class={`pl-6 group-hover/table-row:bg-muted [&:has([data-menu-trigger])]:bg-card [&:has([role=checkbox])]:bg-card ${
+												isFirstCol
+													? 'sticky left-0 z-10 pl-2'
+													: isLastCol
+														? 'sticky right-0 z-10 pl-2'
+														: ''
 											}`}
 										>
 											<Render of={cell.render()} />
