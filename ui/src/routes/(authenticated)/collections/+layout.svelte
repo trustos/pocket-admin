@@ -2,6 +2,17 @@
 	import type { LayoutData } from './$types';
 	import { SideNav } from '$lib/components/nav';
 	import SquareLibrary from 'lucide-svelte/icons/square-library';
+	import { onNavigate } from '$app/navigation';
+	onNavigate((navigation) => {
+		if (!document.startViewTransition) return;
+
+		return new Promise((resolve) => {
+			document.startViewTransition(async () => {
+				resolve();
+				await navigation.complete;
+			});
+		});
+	});
 
 	export let data: LayoutData;
 	const { collections } = data;
@@ -9,7 +20,7 @@
 	const collectionItems = collections.map((collection) => {
 		return {
 			title: collection.name,
-			href: `/collections/${collection.id}`,
+			href: `/collections/${collection.name}`,
 			icon: collection.type == 'base' ? SquareLibrary : ''
 		};
 	});

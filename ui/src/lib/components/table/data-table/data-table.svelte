@@ -207,7 +207,7 @@
 								on:click={(event) => rowClickCallback(event, row.original)}
 								{...rowAttrs}
 								data-state={$selectedDataIds[row.id] && 'selected'}
-								class="group/table-row"
+								class="group/table-row cursor-pointer"
 							>
 								{#each row.cells as cell (cell.id)}
 									<Subscribe attrs={cell.attrs()} let:attrs>

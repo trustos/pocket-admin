@@ -8,7 +8,7 @@ export const prerender = false;
 export const load: PageLoad = async ({ params, fetch, parent }) => {
 	const { collections } = await parent();
 
-	const collectionWithSchema = collections.find((c) => c.id === params.collectionId);
+	const collectionWithSchema = collections.find((c) => c.name === params.collectionName);
 
 	const findRelationFields =
 		(collectionWithSchema?.schema as Partial<RecordModel>[])
@@ -16,7 +16,7 @@ export const load: PageLoad = async ({ params, fetch, parent }) => {
 			.map((c: Partial<RecordModel>) => c.name) || [];
 
 	const collection: ListResultCollection = await pb
-		.collection(params.collectionId)
+		.collection(params.collectionName)
 		.getList<Collection>(1, 20, { fetch, expand: findRelationFields.join(',') });
 
 	const schema: Partial<RecordModel>[][] = [
