@@ -1,4 +1,5 @@
 import type PocketBase from 'pocketbase';
+import Record from 'svelte';
 
 // See https://kit.svelte.dev/docs/types#app
 // for information about these interfaces
@@ -9,7 +10,9 @@ declare global {
 			pb: PocketBase;
 		}
 		// interface PageData {}
-		// interface PageState {}
+		interface PageState {
+			recordPageData: Record;
+		}
 		// interface Platform {}
 	}
 }

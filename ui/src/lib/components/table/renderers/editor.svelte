@@ -1,8 +1,8 @@
 <script lang="ts">
-	import Common from '$lib/components/table/renderers/common.svelte';
 	import NotAvailable from '$lib/components/table/renderers/notAvailable.svelte';
 	import * as Tooltip from '$lib/shadcn/components/ui/tooltip';
 	import EditorPreview from '$lib/components/table/renderers/editor-preview.svelte';
+	import Common from './common.svelte';
 
 	export let value: string;
 
@@ -40,24 +40,16 @@
 </script>
 
 {#if value}
-	<Tooltip.Root openDelay={100} open={true}>
-		<Tooltip.Trigger asChild={false} let:builder>
-			<div class="max-w-sm" {...builder}>
-				{preview}
-			</div>
-			<!-- <a href={`${base}${item.href}`} class={classes()} use:builder.action {...builder}>
-			<svelte:component
-				this={item.icon}
-				class={isActive ? ' h-4 w-4 group-hover:scale-110' : 'h-5 w-5'}
-			/>
-			<span class="sr-only">{item.name || ''}</span>
-		</a> -->
+	<Tooltip.Root openDelay={500}>
+		<Tooltip.Trigger asChild let:builder class="text-left">
+			<span {...builder} use:builder.action>
+				<Common value={preview} />
+			</span>
 		</Tooltip.Trigger>
-		<Tooltip.Content side="right" class="overflow-auto border-2 bg-card">
+		<Tooltip.Content side="top" class="overflow-auto border-2 bg-card">
 			<EditorPreview {value} />
 		</Tooltip.Content>
 	</Tooltip.Root>
-	<!-- <Common value={preview} /> -->
 {:else}
 	<NotAvailable />
 {/if}
