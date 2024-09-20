@@ -1,0 +1,1 @@
+var r=Object.defineProperty;var a=(t,s,o)=>s in t?r(t,s,{enumerable:!0,configurable:!0,writable:!0,value:o}):t[s]=o;var e=(t,s,o)=>a(t,typeof s!="symbol"?s+"":s,o);import{C as c,u as l}from"./user.DBHaCk1k.js";import{P as u}from"./public.DHNvQrpH.js";class n extends c{constructor(){super(u);e(this,"logout",()=>{this.authStore.clear(),l.set(null)})}}const C=new n;export{C as p};

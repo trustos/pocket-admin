@@ -7,6 +7,8 @@ import pb from '$lib/pocketbase';
 import { redirect } from '@sveltejs/kit';
 import { APP_URL } from '$lib/types/constants';
 import { removeTrailingSlash } from '$lib/helpers';
+import { base } from '$app/paths';
+import { user } from '$lib/stores';
 
 export const load: LayoutLoad = async ({ url, route, fetch }) => {
 	const currentPath = removeTrailingSlash(url.pathname);
@@ -20,7 +22,8 @@ export const load: LayoutLoad = async ({ url, route, fetch }) => {
 
 		// Redirect to the home page if is authenticated and on login page
 		if (pb.authStore.isValid && currentPath === APP_URL.login) {
-			throw redirect(302, '/');
+			user.set(pb.authStore.model);
+			throw redirect(302, base);
 		}
 		// Redirect to the login page if not authenticated
 		if (!pb.authStore.isValid && currentPath !== APP_URL.login) {

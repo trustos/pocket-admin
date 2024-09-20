@@ -9,7 +9,7 @@
 
 	const logoutHandler = () => {
 		pb.logout();
-		goto('/');
+		goto(base);
 	};
 </script>
 
