@@ -6,6 +6,7 @@
 	import { Input } from '$lib/shadcn/components/ui/input';
 	import { recordSchema } from '$lib/schemas';
 	import { fieldIcons } from '$lib/types';
+	import { Common } from '$lib/components/record/renderers';
 
 	export let data: PageData;
 	export let className = '';
@@ -66,13 +67,20 @@
 				{#each schema as entry}
 					<Form.Field {form} name={entry.name}>
 						<Form.Control let:attrs>
-							<Form.Label>
+							<Common
+								fieldName={entry.name}
+								{attrs}
+								icon={fieldIcons[entry.type]}
+								bind:value={$formData[entry.name]}
+							/>
+
+							<!-- <Form.Label>
 								<span class="text-muted-foreground">
 									<svelte:component this={fieldIcons[entry.type]} class="inline w-4" />
 									{entry.name}
 								</span>
 							</Form.Label>
-							<Input {...attrs} bind:value={$formData[entry.name]} placeholder="m@example.com" />
+							<Input {...attrs} bind:value={$formData[entry.name]} placeholder="m@example.com" /> -->
 						</Form.Control>
 						<Form.FieldErrors />
 					</Form.Field>
