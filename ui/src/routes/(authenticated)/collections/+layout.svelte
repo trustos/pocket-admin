@@ -20,7 +20,7 @@
 		if (typeof startViewTransition !== 'function') return;
 
 		return new Promise((resolve) => {
-			startViewTransition(async () => {
+			startViewTransition.call(doc, async () => {
 				resolve();
 				await navigation.complete;
 			});

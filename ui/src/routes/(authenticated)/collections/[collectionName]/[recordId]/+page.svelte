@@ -13,8 +13,6 @@
 
 	const { record, schema } = data;
 
-	console.log(schema);
-
 	import { superForm, setMessage, defaults } from 'sveltekit-superforms';
 	import { zod } from 'sveltekit-superforms/adapters';
 
