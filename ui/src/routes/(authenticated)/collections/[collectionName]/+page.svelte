@@ -6,8 +6,6 @@
 	import { pushState, preloadData, goto } from '$app/navigation';
 	import { page } from '$app/stores';
 	import * as Drawer from '$lib/shadcn/components/ui/drawer';
-	import { Button } from '$lib/shadcn/components/ui/button';
-	import { writable } from 'svelte/store';
 
 	export let data: PageData;
 
@@ -42,17 +40,6 @@
 		}
 	};
 
-	// const openStateChanged = (isOpen: boolean) => {
-	// 	console.log(isOpen);
-	// 	// if (!isOpen && $page.state.recordPageData) history.back();
-	// };
-	//
-	let isOpen = true;
-
-	// setTimeout(() => {
-	// 	isOpen = false;
-	// }, 5000);
-	//
 	const onRecordClose = () => {
 		setTimeout(() => {
 			history.back();
@@ -76,12 +63,8 @@
 						>Editing <span class="font-bold">{title}</span> record</Drawer.Title
 					>
 					<Drawer.Description>This action cannot be undone.</Drawer.Description>
-					<RecordPage data={$page.state.recordPageData} />
+					<RecordPage class="mt-5 max-h-[75vh] pt-5 " data={$page.state.recordPageData} />
 				</Drawer.Header>
-				<!-- <Drawer.Footer>
-					<Button>Save</Button>
-					<Drawer.Close>Close</Drawer.Close>
-				</Drawer.Footer> -->
 			</Drawer.Content>
 		</Drawer.Root>
 	{/if}

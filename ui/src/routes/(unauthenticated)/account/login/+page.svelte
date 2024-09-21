@@ -5,7 +5,6 @@
 	import { Alert } from '$lib/components/alert';
 	import { fly } from 'svelte/transition';
 	import { quintOut } from 'svelte/easing';
-	import { user } from '$lib/stores';
 
 	import { superForm, setMessage, defaults } from 'sveltekit-superforms';
 	import { zod } from 'sveltekit-superforms/adapters';
@@ -45,8 +44,8 @@
 						transition:fly={{
 							delay: 250,
 							duration: 300,
-							x: 100,
-							y: 500,
+							x: 0,
+							y: -500,
 							opacity: 0.5,
 							easing: quintOut
 						}}
