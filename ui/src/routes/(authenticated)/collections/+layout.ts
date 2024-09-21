@@ -1,7 +1,7 @@
 import pb from '$lib/pocketbase';
 import type { LayoutLoad } from './$types';
 
-import type { Collection } from '$lib/types';
+import type { Collection, CollectionSchema } from '$lib/types';
 
 export const load: LayoutLoad = async ({ fetch }) => {
 	const allCollections = await pb
@@ -38,9 +38,14 @@ export const load: LayoutLoad = async ({ fetch }) => {
 		})
 	);
 
+	const schema: CollectionSchema = [
+		...(adminCollection?.schema || []),
+		{ name: 'recordsCount', type: 'number' }
+	];
+
 	return {
 		collections: updatedCollections || [],
-		schema: [...(adminCollection?.schema || []), { name: 'recordsCount' }]
+		schema
 	};
 };
 

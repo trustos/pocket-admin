@@ -1,19 +1,20 @@
 import { z } from 'zod';
+import type { CollectionSchema } from '$lib/types';
 
 // A function to generate the Zod schema dynamically
-const generateZodSchema = (fields) => {
-	const schemaShape = fields.reduce((shape, field) => {
+const generateZodSchema = (fields: CollectionSchema) => {
+	const schemaShape = fields.reduce((shape: Record<string, z.ZodTypeAny>, field) => {
 		let fieldSchema;
 
 		switch (field.type) {
 			case 'text':
 				fieldSchema = z.string();
-				if (field.options.min) fieldSchema = fieldSchema.min(field.options.min);
-				if (field.options.max) fieldSchema = fieldSchema.max(field.options.max);
+				if (field?.options?.min) fieldSchema = fieldSchema.min(field.options.min);
+				if (field?.options?.max) fieldSchema = fieldSchema.max(field.options.max);
 				break;
 
 			case 'file':
-				fieldSchema = z.array(z.any()).max(field.options.maxSelect);
+				fieldSchema = z.array(z.any()).max(field.options?.maxSelect || 99);
 				break;
 
 			case 'editor':
@@ -22,8 +23,8 @@ const generateZodSchema = (fields) => {
 
 			case 'number':
 				fieldSchema = z.number();
-				if (field.options.min !== null) fieldSchema = fieldSchema.min(field.options.min);
-				if (field.options.max !== null) fieldSchema = fieldSchema.max(field.options.max);
+				if (field?.options?.min) fieldSchema = fieldSchema.min(field.options.min);
+				if (field?.options?.max) fieldSchema = fieldSchema.max(field.options.max);
 				break;
 
 			case 'bool':
@@ -43,7 +44,7 @@ const generateZodSchema = (fields) => {
 				break;
 
 			case 'select':
-				fieldSchema = z.enum(field.options.values);
+				fieldSchema = z.enum(field?.options?.values as [string, ...string[]]);
 				break;
 
 			case 'relation':
@@ -72,4 +73,4 @@ const generateZodSchema = (fields) => {
 };
 
 // Generate Zod schema from the fields array
-export const recordSchema = (fields) => generateZodSchema(fields);
+export const recordSchema = (fields: CollectionSchema) => generateZodSchema(fields);

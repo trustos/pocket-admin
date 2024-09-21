@@ -1,5 +1,7 @@
 import type { ListResult, RecordModel } from 'pocketbase';
 import type { Collection } from './interfaces';
+import type { Column } from 'svelte-headless-table';
+
 export type ListResultCollection = ListResult<Collection>;
 
 export type SchemaFiledType =
@@ -19,6 +21,22 @@ export type SchemaFiledType =
 export type SchemaField = {
 	name: string;
 	type: SchemaFiledType;
+	options?: {
+		min?: number;
+		max?: number;
+		maxSelect?: number;
+		maxSize?: number;
+		protected?: boolean;
+		mimeTypes?: string[];
+		thumbs?: string[];
+		convertUrls?: boolean;
+		noDecimal?: boolean;
+		values?: string[];
+	};
+	required?: boolean;
+	system?: boolean;
+	unique?: boolean;
+	presentable?: boolean;
 };
 
-export type CollectionSchema = Partial<RecordModel>;
+export type CollectionSchema = SchemaField[];

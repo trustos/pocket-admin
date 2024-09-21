@@ -15,20 +15,22 @@
 		<Card.Content class="space-y-4">
 			<div class="space-y-2">
 				<Label for="name">Name</Label>
-				<p id="name" class="text-sm">{$user.name}</p>
+				<p id="name" class="text-sm">{$user?.name}</p>
 			</div>
 			<div class="space-y-2">
 				<Label for="email">Email</Label>
-				<p id="email" class="text-sm">{$user.email}</p>
+				<p id="email" class="text-sm">{$user?.email}</p>
 			</div>
-			{#each Object.entries($user) as [key, value]}
-				{#if key !== 'name' && key !== 'email'}
-					<div class="space-y-2">
-						<Label for={key}>{key}</Label>
-						<p id={key} class="text-sm">{value}</p>
-					</div>
-				{/if}
-			{/each}
+			{#if $user}
+				{#each Object.entries($user) as [key, value]}
+					{#if key !== 'name' && key !== 'email'}
+						<div class="space-y-2">
+							<Label for={key}>{key}</Label>
+							<p id={key} class="text-sm">{value}</p>
+						</div>
+					{/if}
+				{/each}
+			{/if}
 		</Card.Content>
 	</Card.Root>
 </main>

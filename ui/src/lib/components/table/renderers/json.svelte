@@ -2,7 +2,7 @@
 	import Common from './common.svelte';
 	import { NotAvailable } from '$lib/components/table/renderers';
 
-	const isJsonString = (str) => {
+	const isJsonString = (str: string) => {
 		try {
 			JSON.parse(str);
 		} catch (e) {

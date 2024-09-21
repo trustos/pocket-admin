@@ -1,4 +1,5 @@
 import type { RecordModel } from 'pocketbase';
+import type { CollectionSchema } from './types';
 
 type MenuPosition = 'top' | 'bottom';
 
@@ -15,4 +16,5 @@ export interface Collection extends RecordModel {
 	id: string;
 	name: string;
 	recordsCount?: number;
+	schema: CollectionSchema;
 }

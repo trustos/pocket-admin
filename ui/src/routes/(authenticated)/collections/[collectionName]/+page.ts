@@ -1,5 +1,5 @@
 import type { PageLoad } from './$types';
-import type { Collection, ListResultCollection } from '$lib/types';
+import type { Collection, ListResultCollection, CollectionSchema } from '$lib/types';
 
 import pb from '$lib/pocketbase';
 import type { RecordModel } from 'pocketbase';
@@ -19,7 +19,7 @@ export const load: PageLoad = async ({ params, fetch, parent }) => {
 		.collection(params.collectionName)
 		.getList<Collection>(1, 20, { fetch, expand: findRelationFields.join(',') });
 
-	const schema: Partial<RecordModel>[][] = [
+	const schema: CollectionSchema = [
 		{ name: 'id', type: 'id' },
 		...(collectionWithSchema?.schema || []),
 		{ name: 'created', type: 'date' },

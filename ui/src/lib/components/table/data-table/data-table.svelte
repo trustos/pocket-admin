@@ -7,7 +7,7 @@
 		DataTableCell,
 		DataTableCheckbox
 	} from '$lib/components/table';
-	import type { Collection, ColProps, CollectionSchema } from '$lib/types';
+	import type { Collection, CollectionSchema } from '$lib/types';
 	import {
 		addPagination,
 		addSortBy,
@@ -24,8 +24,6 @@
 	import { Input } from '$lib/shadcn/components/ui/input';
 	import * as DropdownMenu from '$lib/shadcn/components/ui/dropdown-menu';
 
-	import { Separator } from '$lib/shadcn/components/ui/separator';
-
 	const excludedColumns = [
 		'collectionId',
 		'collectionName',
@@ -38,7 +36,7 @@
 	];
 
 	export let data: Collection[] = [];
-	export let schema: CollectionSchema[] = [];
+	export let schema: CollectionSchema = [];
 	export let title: string = '';
 	export let description: string = '';
 	export let showHeaderIcons: boolean = true;
@@ -58,67 +56,70 @@
 		.map((s) => ({ name: s.name, type: s.type }))
 		.filter((s) => !excludedColumns.includes(s.name));
 
-	const cols: ColProps<Collection>[] = colKeys.map(
-		({ name, type }: { name: string; type: string }) => {
-			return {
-				accessor: name,
-				header: () => {
-					return createRender(DataTableHeader, { name, type, showIcons: showHeaderIcons });
-				},
-				cell: ({ value, row }: { value: unknown; row: { original: Collection } }) => {
-					return createRender(DataTableCell, { name, type, value, record: row.original });
-				},
-				plugins: {
-					sort: {
-						disable: name === 'id'
-					}
+	const cols = colKeys.map(({ name, type }) => {
+		return table.column({
+			accessor: name,
+			header: () => {
+				return createRender(DataTableHeader, { name, type, showIcons: showHeaderIcons });
+			},
+			cell: ({ value, row }) => {
+				//@ts-expect-error - This is a hack to get the row data
+				return createRender(DataTableCell, { name, type, value, record: row.original });
+			},
+			plugins: {
+				sort: {
+					disable: name === 'id'
 				}
-			};
-		}
-	);
+			}
+		});
+	});
 
 	// Add checkbox column
-	cols.unshift({
-		accessor: ({ id }: { id: string }) => id,
-		header: (_, { pluginStates }) => {
-			const { allPageRowsSelected } = pluginStates.select;
-			return createRender(DataTableCheckbox, {
-				checked: allPageRowsSelected
-			});
-		},
-		cell: ({ row }, { pluginStates }) => {
-			const { getRowState } = pluginStates.select;
-			const { isSelected } = getRowState(row);
-
-			return createRender(DataTableCheckbox, {
-				checked: isSelected,
-				class: 'sticky left-0 z-20 bg-white dark:bg-gray-800'
-			});
-		},
-		plugins: {
-			sort: {
-				disable: true
+	cols.unshift(
+		table.column({
+			accessor: ({ id }) => id,
+			header: (_, { pluginStates }) => {
+				const { allPageRowsSelected } = pluginStates.select;
+				return createRender(DataTableCheckbox, {
+					checked: allPageRowsSelected
+				});
 			},
-			filter: {
-				exclude: true
-			}
-		}
-	});
+			cell: ({ row }, { pluginStates }) => {
+				const { getRowState } = pluginStates.select;
+				const { isSelected } = getRowState(row);
 
-	cols.push({
-		accessor: ({ id }: { id: string }) => id,
-		header: '',
-		cell: ({ value }: { value: string }) => {
-			return createRender(DataTableActions, { id: value });
-		},
-		plugins: {
-			sort: {
-				disable: true
+				return createRender(DataTableCheckbox, {
+					checked: isSelected,
+					class: 'sticky left-0 z-20 bg-white dark:bg-gray-800'
+				});
+			},
+			plugins: {
+				sort: {
+					disable: true
+				},
+				filter: {
+					exclude: true
+				}
 			}
-		}
-	});
+		})
+	);
 
-	const columns = table.createColumns(cols.map((col) => table.column(col)));
+	cols.push(
+		table.column({
+			accessor: ({ id }: { id: string }) => id,
+			header: '',
+			cell: ({ value }: { value: string }) => {
+				return createRender(DataTableActions, { id: value });
+			},
+			plugins: {
+				sort: {
+					disable: true
+				}
+			}
+		})
+	);
+
+	const columns = table.createColumns(cols);
 
 	const { headerRows, pageRows, tableAttrs, tableBodyAttrs, pluginStates, flatColumns, rows } =
 		table.createViewModel(columns);
@@ -204,7 +205,10 @@
 					{#each $pageRows as row (row.id)}
 						<Subscribe rowAttrs={row.attrs()} let:rowAttrs>
 							<Table.Row
-								on:click={(event) => rowClickCallback(event, row.original)}
+								on:click={(event) => {
+									//@ts-expect-error - rowClickCallback is defined in the parent component
+									rowClickCallback(event, row.original);
+								}}
 								{...rowAttrs}
 								data-state={$selectedDataIds[row.id] && 'selected'}
 								class="group/table-row cursor-pointer"

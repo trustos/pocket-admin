@@ -1,9 +1,9 @@
 <script lang="ts">
-	import { fieldIcons } from '$lib/types/constants';
+	import { fieldIcons, type SchemaFiledType } from '$lib/types';
 	import { capitalizeFirstLetter } from '$lib/helpers';
 
-	export let name: any;
-	export let type: any;
+	export let name: string;
+	export let type: SchemaFiledType;
 	export let showIcons: boolean = true;
 </script>
 

@@ -10,6 +10,6 @@ export const load: PageLoad = async ({ params, parent, fetch }) => {
 
 	return {
 		record,
-		schema: collection?.schema
+		schema: collection?.schema || []
 	};
 };

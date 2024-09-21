@@ -3,11 +3,24 @@
 	import { SideNav } from '$lib/components/nav';
 	import SquareLibrary from 'lucide-svelte/icons/square-library';
 	import { onNavigate } from '$app/navigation';
+
+	// Define a type for the document with the optional startViewTransition method
+	type DocumentWithViewTransition = Document & {
+		startViewTransition?: (callback: () => Promise<void> | void) => {
+			finished: Promise<void>;
+			ready: Promise<void>;
+			updateCallbackDone: Promise<void>;
+		};
+	};
+
 	onNavigate((navigation) => {
-		if (!document.startViewTransition) return;
+		const doc = document as DocumentWithViewTransition;
+		const startViewTransition = doc.startViewTransition;
+
+		if (typeof startViewTransition !== 'function') return;
 
 		return new Promise((resolve) => {
-			document.startViewTransition(async () => {
+			startViewTransition(async () => {
 				resolve();
 				await navigation.complete;
 			});
