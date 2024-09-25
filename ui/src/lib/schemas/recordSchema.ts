@@ -38,9 +38,33 @@ const generateZodSchema = (fields: CollectionSchema) => {
 				break;
 
 			case 'number':
-				fieldSchema = z.number();
-				if (field?.options?.min) fieldSchema = fieldSchema.min(field.options.min);
-				if (field?.options?.max) fieldSchema = fieldSchema.max(field.options.max);
+				fieldSchema = z.preprocess(
+					(val) => {
+						if (typeof val === 'string' && val.trim() === '') return undefined;
+						const num = Number(val);
+						return isNaN(num) ? val : num;
+					},
+					z.number({
+						invalid_type_error: 'Please enter a valid number',
+						required_error: 'Number is required'
+					})
+				);
+
+				if (field.options?.min !== undefined && field.options.min !== null) {
+					const min = field.options.min;
+					fieldSchema = fieldSchema.refine((n) => n >= min, {
+						message: `Value must be at least ${min}`
+					});
+				}
+
+				if (field.options?.max !== undefined && field.options.max !== null) {
+					const max = field.options.max;
+					fieldSchema = fieldSchema.refine((n) => n <= max, {
+						message: `Value must be at most ${max}`
+					});
+				}
+
+				fieldSchema = fieldSchema.default(0);
 				break;
 
 			case 'bool':

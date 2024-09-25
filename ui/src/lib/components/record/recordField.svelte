@@ -1,9 +1,15 @@
 <script lang="ts">
-	import { CommonRenderer, TextRenderer, FileRenderer } from '$lib/components/record/renderers';
+	import {
+		CommonRenderer,
+		TextRenderer,
+		FileRenderer,
+		NumberRenderer
+	} from '$lib/components/record/renderers';
 	import type { RecordModel } from 'pocketbase';
 
 	import type { Collection, SchemaField } from '$lib/types';
 	import type { SuperForm } from 'sveltekit-superforms';
+	import Number from '../table/renderers/number.svelte';
 
 	export let type: string;
 	// export let value: number | string | boolean | string[] | Collection | unknown;
@@ -46,10 +52,10 @@
 {:else if type === 'email' && isString(value)}
 	<EmailRenderer {value} />
 {:else if type === 'url' && isString(value)}
-	<UrlRenderer {value} />
-{:else if type === 'number' && isNumber(value)}
-	<NumberRenderer {value} />
-{:else if type === 'id' && isString(value)}
+	<UrlRenderer {value} /> -->
+{:else if type === 'number'}
+	<NumberRenderer {attrs} bind:value />
+	<!-- {:else if type === 'id' && isString(value)}
 	<IdRenderer {value} />
 {:else if type === 'bool' && isBoolean(value)}
 	<BoolRenderer {value} />
