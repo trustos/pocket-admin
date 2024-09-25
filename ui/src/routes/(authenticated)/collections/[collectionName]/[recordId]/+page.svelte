@@ -3,40 +3,40 @@
 	import type { PageData } from './$types';
 	import { cn } from '$lib/shadcn/utils';
 	import * as Form from '$lib/shadcn/components/ui/form';
-	import { Input } from '$lib/shadcn/components/ui/input';
 	import { recordSchema } from '$lib/schemas';
 	import { fieldIcons } from '$lib/types';
-	import { Common } from '$lib/components/record/renderers';
+	import pb from '$lib/pocketbase';
+	import { RecordField } from '$lib/components/record';
 
 	export let data: PageData;
 	export let className = '';
+	export let destroyCallback = () => {};
 	export { className as class };
 
 	const { record, schema } = data;
 
-	import { superForm, setMessage, defaults } from 'sveltekit-superforms';
+	import { superForm } from 'sveltekit-superforms';
 	import { zod } from 'sveltekit-superforms/adapters';
 
-	// console.log(schema);
-	// console.log(record);
-
 	const dynamicSchema = zod(recordSchema(schema));
-
-	console.log(dynamicSchema);
 
 	const form = superForm(record, {
 		SPA: true,
 		validators: dynamicSchema,
 		onUpdate: async ({ form }) => {
-			console.log(form);
 			if (form.valid) {
-				console.log('validForm');
+				pb.collection(record.collectionName).update(record.id, form.data);
 				// try {
 				// 	await pb.collection('users').authWithPassword(form.data.email, form.data.password);
 				// 	//Set the user store
 				// } catch {
 				// 	setMessage(form, 'Failed to authenticate.');
 				// }
+			}
+		},
+		onResult: ({ result }) => {
+			if (result.type == 'success') {
+				destroyCallback();
 			}
 		}
 	});
@@ -50,10 +50,10 @@
 		className
 	)}
 >
-	<form method="POST" use:enhance>
-		<Card.Root class="mx-auto w-full">
-			<Card.Content class={`space-y-4 overflow-auto pt-5 ${className ? 'max-h-[75vh]' : ''}`}>
-				<div>
+	<form method="POST" use:enhance enctype="multipart/form-data">
+		<Card.Root class="relative mx-auto w-full">
+			<Card.Content class={`space-y-4 overflow-auto pb-24 pt-5 ${className ? 'max-h-[75vh]' : ''}`}>
+				<div class="text-left">
 					<span class="text-muted-foreground">
 						<svelte:component this={fieldIcons['id']} class="inline w-4" />
 						id
@@ -65,27 +65,32 @@
 					</div>
 				</div>
 				{#each schema as entry}
-					<Form.Field {form} name={entry.name}>
+					<Form.Field {form} name={entry.name} class="text-left">
 						<Form.Control let:attrs>
-							<Common
-								fieldName={entry.name}
-								{attrs}
-								icon={fieldIcons[entry.type]}
-								bind:value={$formData[entry.name]}
-							/>
-
-							<!-- <Form.Label>
+							<Form.Label>
 								<span class="text-muted-foreground">
 									<svelte:component this={fieldIcons[entry.type]} class="inline w-4" />
 									{entry.name}
 								</span>
 							</Form.Label>
-							<Input {...attrs} bind:value={$formData[entry.name]} placeholder="m@example.com" /> -->
+							<RecordField
+								{form}
+								{record}
+								type={entry.type}
+								{attrs}
+								options={entry.options}
+								bind:value={$formData[entry.name]}
+							/>
 						</Form.Control>
 						<Form.FieldErrors />
 					</Form.Field>
 				{/each}
 			</Card.Content>
+			<Card.Footer
+				class={`absolute bottom-0 w-full rounded-b-lg bg-card pb-4 pt-4 ${className ? 'shadow-top' : ''}`}
+			>
+				<Form.Button class="w-full">Save</Form.Button>
+			</Card.Footer>
 		</Card.Root>
 	</form>
 </main>

@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import { nullable, z } from 'zod';
 import type { CollectionSchema } from '$lib/types';
 
 // A function to generate the Zod schema dynamically
@@ -15,6 +15,22 @@ const generateZodSchema = (fields: CollectionSchema) => {
 
 			case 'file':
 				fieldSchema = z.array(z.any()).max(field.options?.maxSelect || 99);
+
+				//Validate mimeTypes validation for file type
+				if (field.options?.mimeTypes && field.options?.mimeTypes.length > 0) {
+					fieldSchema = fieldSchema.refine(
+						(files) => {
+							return files.every((file: File | string) => {
+								if (typeof file === 'string') {
+									return true;
+								} else if (file instanceof File) {
+									return field.options?.mimeTypes?.includes(file.type);
+								}
+							});
+						},
+						`File type must be one of ${field.options.mimeTypes.join(', ')}`
+					);
+				}
 				break;
 
 			case 'editor':
@@ -32,7 +48,7 @@ const generateZodSchema = (fields: CollectionSchema) => {
 				break;
 
 			case 'email':
-				fieldSchema = z.string().email();
+				fieldSchema = z.string().email().optional();
 				break;
 
 			case 'url':
@@ -62,7 +78,7 @@ const generateZodSchema = (fields: CollectionSchema) => {
 
 		// If the field is not required, make it optional
 		if (!field.required) {
-			fieldSchema = fieldSchema.optional();
+			fieldSchema = fieldSchema.optional().or(z.null()).or(z.literal(''));
 		}
 
 		shape[field.name] = fieldSchema;

@@ -21,30 +21,22 @@
 	export let name: string;
 	export let record: Collection;
 
-	// Get value from the record based on the field name
-	function getValue(record: Collection, name: string): unknown {
-		// return record[name as keyof Collection];
-		return value;
-	}
-
 	// Type guards
-	function isString(value: unknown): value is string {
+	const isString = (value: unknown): value is string => {
 		return typeof value === 'string';
-	}
+	};
 
-	function isNumber(value: unknown): value is number {
+	const isNumber = (value: unknown): value is number => {
 		return typeof value === 'number';
-	}
+	};
 
-	function isBoolean(value: unknown): value is boolean {
+	const isBoolean = (value: unknown): value is boolean => {
 		return typeof value === 'boolean';
-	}
+	};
 
-	function isStringArray(value: unknown): value is string[] {
+	const isStringArray = (value: unknown): value is string[] => {
 		return Array.isArray(value) && value.every((item) => typeof item === 'string');
-	}
-
-	$: value = getValue(record, name);
+	};
 </script>
 
 <!-- Use the type guard directly in the if-block to ensure TypeScript narrows the type properly -->

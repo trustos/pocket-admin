@@ -39,7 +39,6 @@
 		<Card.Root class="w-full max-w-sm">
 			<Card.Header>
 				{#if $message}
-					<!-- transition:fade={{ delay: 100, duration: 200 }}  -->
 					<div
 						transition:fly={{
 							delay: 250,

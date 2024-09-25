@@ -17,7 +17,9 @@ const config: Config = {
 		},
 		extend: {
 			boxShadow: {
-				'right-only': 'inset -5px 0 5px 0 rgba(0, 0, 0, .06)' // Adjust values to suit your needs
+				'right-only': 'inset -5px 0 5px 0 rgba(0, 0, 0, .06)', // Adjust values to suit your needs
+				't-md': '0 -4px 6px -1px rgba(0, 0, 0, 0.2), 0 2px 4px -1px rgba(0, 0, 0, 0.08)',
+				top: '0 -4px 5px #0000000d'
 			},
 			colors: {
 				border: 'hsl(var(--border) / <alpha-value>)',

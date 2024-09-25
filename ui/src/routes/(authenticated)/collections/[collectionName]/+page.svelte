@@ -6,6 +6,7 @@
 	import { pushState, preloadData, goto } from '$app/navigation';
 	import { page } from '$app/stores';
 	import * as Drawer from '$lib/shadcn/components/ui/drawer';
+	import { writable } from 'svelte/store';
 
 	export let data: PageData;
 
@@ -40,32 +41,40 @@
 		}
 	};
 
+	$: pageDataAvailable = !!$page.state.recordPageData;
+
 	const onRecordClose = () => {
-		setTimeout(() => {
-			history.back();
-		}, 300);
+		if (pageDataAvailable) {
+			setTimeout(() => {
+				history.back();
+			}, 200);
+		}
 	};
 </script>
 
 {#key schema}
 	<DataTable {title} {schema} data={items} rowClickCallback={onRecordRowClick} />
 
-	{#if $page.state.recordPageData}
-		<Drawer.Root
-			shouldScaleBackground
-			open={true}
-			onClose={onRecordClose}
-			backgroundColor={'black'}
-		>
-			<Drawer.Content>
-				<Drawer.Header>
-					<Drawer.Title class="font-normal"
-						>Editing <span class="font-bold">{title}</span> record</Drawer.Title
-					>
-					<Drawer.Description>This action cannot be undone.</Drawer.Description>
-					<RecordPage class="mt-5 max-h-[75vh] pt-5 " data={$page.state.recordPageData} />
-				</Drawer.Header>
-			</Drawer.Content>
-		</Drawer.Root>
-	{/if}
+	<!-- {#if pageDataAvailable} -->
+	<Drawer.Root
+		shouldScaleBackground
+		open={pageDataAvailable}
+		onClose={onRecordClose}
+		backgroundColor={'black'}
+	>
+		<Drawer.Content>
+			<Drawer.Header>
+				<Drawer.Title class="font-normal"
+					>Editing <span class="font-bold">{title}</span> record</Drawer.Title
+				>
+				<Drawer.Description>This action cannot be undone.</Drawer.Description>
+				<RecordPage
+					destroyCallback={onRecordClose}
+					class="mt-5 max-h-[75vh] pt-5"
+					data={{ ...JSON.parse(JSON.stringify($page.state.recordPageData)) }}
+				/>
+			</Drawer.Header>
+		</Drawer.Content>
+	</Drawer.Root>
+	<!-- {/if} -->
 {/key}
