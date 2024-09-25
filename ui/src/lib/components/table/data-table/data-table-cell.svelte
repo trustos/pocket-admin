@@ -48,7 +48,7 @@
 	<EmailRenderer {value} />
 {:else if type === 'url' && isString(value)}
 	<UrlRenderer {value} />
-{:else if type === 'file' && isStringArray(value)}
+{:else if type === 'file' && (isStringArray(value) || isString(value))}
 	<FileRenderer {value} collection={record} />
 {:else if type === 'number' && isNumber(value)}
 	<NumberRenderer {value} />
