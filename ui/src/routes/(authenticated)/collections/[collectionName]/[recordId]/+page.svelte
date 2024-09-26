@@ -43,7 +43,7 @@
 
 	const { form: formData, message, enhance } = form;
 
-	console.log(schema);
+	// console.log(schema);
 </script>
 
 <main
