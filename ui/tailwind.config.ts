@@ -16,6 +16,15 @@ const config: Config = {
 			}
 		},
 		extend: {
+			keyframes: {
+				wiggle: {
+					'0%, 100%': { transform: 'rotate(-3deg)' },
+					'50%': { transform: 'rotate(3deg)' }
+				}
+			},
+			animation: {
+				wiggle: 'wiggle 1s ease-in-out infinite'
+			},
 			boxShadow: {
 				'right-only': 'inset -5px 0 5px 0 rgba(0, 0, 0, .06)', // Adjust values to suit your needs
 				't-md': '0 -4px 6px -1px rgba(0, 0, 0, 0.2), 0 2px 4px -1px rgba(0, 0, 0, 0.08)',

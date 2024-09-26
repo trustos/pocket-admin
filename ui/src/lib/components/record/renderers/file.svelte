@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { Input, type FormInputEvent } from '$lib/shadcn/components/ui/input';
-	import FilePreview from '$lib/components/record/renderers/file-preview.svelte';
+	import FilePreview from '$lib/components/record/renderers/file/file-preview.svelte';
 
 	import type { RecordModel } from 'pocketbase';
 	import { type SuperForm } from 'sveltekit-superforms';

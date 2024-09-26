@@ -67,10 +67,14 @@
 				{#each schema as entry}
 					<Form.Field {form} name={entry.name} class="text-left">
 						<Form.Control let:attrs>
-							<Form.Label>
+							<Form.Label class="block">
 								<span class="text-muted-foreground">
 									<svelte:component this={fieldIcons[entry.type]} class="inline w-4" />
 									{entry.name}
+
+									{#if entry.type === 'date'}
+										<span class="text-xs text-muted-foreground">(UTC)</span>
+									{/if}
 								</span>
 							</Form.Label>
 							<RecordField

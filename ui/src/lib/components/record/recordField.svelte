@@ -3,7 +3,11 @@
 		CommonRenderer,
 		TextRenderer,
 		FileRenderer,
-		NumberRenderer
+		NumberRenderer,
+		BoolRenderer,
+		EmailRenderer,
+		UrlRenderer,
+		DateRenderer
 	} from '$lib/components/record/renderers';
 	import type { RecordModel } from 'pocketbase';
 
@@ -48,20 +52,20 @@
 {:else if type === 'file'}
 	<FileRenderer {options} {form} bind:value {attrs} {record} />
 	<!-- {:else if type === 'editor' && isString(value)}
-	<EditorRenderer {value} />
+	<EditorRenderer {value} /> -->
 {:else if type === 'email' && isString(value)}
-	<EmailRenderer {value} />
+	<EmailRenderer {attrs} bind:value />
 {:else if type === 'url' && isString(value)}
-	<UrlRenderer {value} /> -->
+	<UrlRenderer {attrs} bind:value />
 {:else if type === 'number'}
 	<NumberRenderer {attrs} bind:value />
 	<!-- {:else if type === 'id' && isString(value)}
-	<IdRenderer {value} />
+	<IdRenderer {value} /> -->
 {:else if type === 'bool' && isBoolean(value)}
-	<BoolRenderer {value} />
+	<BoolRenderer {attrs} bind:value />
 {:else if type === 'date' && isString(value)}
-	<DateRenderer {value} />
-{:else if type === 'select' && isString(value)}
+	<DateRenderer {attrs} bind:value />
+	<!-- {:else if type === 'select' && isString(value)}
 	<SelectRenderer {value} />
 {:else if type === 'relation' && (isString(value) || isStringArray(value))}
 	<RelationRenderer {value} {record} fieldName={name} />

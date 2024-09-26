@@ -18,3 +18,15 @@ export const comparePaths = (currentPagePath: string, hrefPath: string) => {
 export const capitalizeFirstLetter = (word: string) => {
 	return word[0].toUpperCase() + word.slice(1);
 };
+
+export const utcDate = (date: Date) =>
+	new Date(
+		Date.UTC(
+			date.getUTCFullYear(),
+			date.getUTCMonth(),
+			date.getUTCDate(),
+			date.getUTCHours(),
+			date.getUTCMinutes(),
+			date.getUTCSeconds()
+		)
+	);
