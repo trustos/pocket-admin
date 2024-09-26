@@ -84,7 +84,13 @@ const generateZodSchema = (fields: CollectionSchema) => {
 				break;
 
 			case 'select':
-				fieldSchema = z.enum(field?.options?.values as [string, ...string[]]);
+				if (field?.options?.values && field.options.values.length > 0) {
+					const validValues = field.options.values as [string, ...string[]];
+					fieldSchema = z.union([z.enum(validValues), z.array(z.enum(validValues))]);
+				} else {
+					// Fallback to any string if no valid values are provided
+					fieldSchema = z.union([z.string(), z.array(z.string())]);
+				}
 				break;
 
 			case 'relation':

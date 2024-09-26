@@ -119,7 +119,13 @@
 			<Input bind:value {...attrs} type="hidden" />
 		</Button>
 	</Popover.Trigger>
-	<span role="button" on:click={() => clearDate()} tabindex="0" on:keypress={() => clearDate()}>
+	<span
+		role="button"
+		class="align-bottom"
+		on:click={() => clearDate()}
+		tabindex="0"
+		on:keypress={() => clearDate()}
+	>
 		<Tooltip text="Clear date">
 			<Eraser
 				class={`transition-all ${value ? 'hover:animate-wiggle text-primary' : 'text-muted'}`}
@@ -129,21 +135,13 @@
 	<Popover.Content class="w-auto p-0">
 		<Calendar value={calendarDate} onValueChange={handleCalendarChange} />
 		<div class="border-t border-border p-3">
-			<Label for="time" class="mb-2 block text-sm font-medium">Time (UTC)</Label>
+			<Label for="time" class="mb-2 block text-sm font-medium">Time</Label>
 			<div class="flex items-center">
 				<ClockIcon class="mr-2 h-4 w-4 opacity-50" />
 				<TimePicker
 					time={`${dateTime.hour.toString().padStart(2, '0')}:${dateTime.minute.toString().padStart(2, '0')}`}
 					on:change={handleTimeChange}
 				/>
-				<!-- <Input
-					tabindex={0}
-					id="time"
-					type="time"
-					value={`${dateTime.hour.toString().padStart(2, '0')}:${dateTime.minute.toString().padStart(2, '0')}`}
-					on:input={handleTimeChange}
-					class="block w-full"
-				/> -->
 			</div>
 		</div>
 	</Popover.Content>

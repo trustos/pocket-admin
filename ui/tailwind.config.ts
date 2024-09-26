@@ -18,8 +18,8 @@ const config: Config = {
 		extend: {
 			keyframes: {
 				wiggle: {
-					'0%, 100%': { transform: 'rotate(-3deg)' },
-					'50%': { transform: 'rotate(3deg)' }
+					'0%, 100%': { transform: 'translateX(0px)' },
+					'50%': { transform: 'translateX(6px)' }
 				}
 			},
 			animation: {
