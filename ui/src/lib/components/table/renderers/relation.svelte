@@ -40,7 +40,7 @@
 	{#each relations as relation}
 		{#if isExpanded(fieldName)}
 			<Badge class="mb-2" variant="outline">
-				<Tooltip.Root openDelay={0}>
+				<Tooltip.Root openDelay={300}>
 					<Tooltip.Trigger>
 						<Info class="inline w-4" />
 					</Tooltip.Trigger>

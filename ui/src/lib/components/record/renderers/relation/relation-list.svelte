@@ -15,7 +15,7 @@
 	{#each relations as relation (relation.id)}
 		<li class="flex items-center justify-between rounded bg-secondary p-2">
 			<Badge variant="secondary">
-				<Tooltip.Root openDelay={0}>
+				<Tooltip.Root openDelay={300}>
 					<Tooltip.Trigger>
 						<Info class="inline w-4" />
 					</Tooltip.Trigger>

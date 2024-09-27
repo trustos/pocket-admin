@@ -41,6 +41,7 @@
 		"clsx": "^2.1.1",
 		"cmdk-sv": "^0.0.18",
 		"formsnap": "^1.0.1",
+		"highlight.js": "^11.10.0",
 		"lucide-svelte": "^0.438.0",
 		"mode-watcher": "^0.4.1",
 		"pocketbase": "^0.21.5",

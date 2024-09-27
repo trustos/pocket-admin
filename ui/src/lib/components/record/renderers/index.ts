@@ -8,3 +8,4 @@ export { default as UrlRenderer } from '$lib/components/record/renderers/url.sve
 export { default as DateRenderer } from '$lib/components/record/renderers/date/date.svelte';
 export { default as SelectRenderer } from '$lib/components/record/renderers/select.svelte';
 export { default as RelationRenderer } from '$lib/components/record/renderers/relation/relation.svelte';
+export { default as JsonRenderer } from '$lib/components/record/renderers/json.svelte';

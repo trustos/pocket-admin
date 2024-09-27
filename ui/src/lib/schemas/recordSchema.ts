@@ -104,7 +104,7 @@ const generateZodSchema = (fields: CollectionSchema) => {
 				break;
 
 			case 'json':
-				fieldSchema = z.object({});
+				fieldSchema = z.object({}).catchall(z.any());
 				break;
 
 			default:

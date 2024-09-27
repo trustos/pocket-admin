@@ -9,7 +9,8 @@
 		UrlRenderer,
 		DateRenderer,
 		SelectRenderer,
-		RelationRenderer
+		RelationRenderer,
+		JsonRenderer
 	} from '$lib/components/record/renderers';
 	import type { RecordModel } from 'pocketbase';
 
@@ -71,8 +72,8 @@
 	<SelectRenderer {options} {attrs} bind:value />
 {:else if type === 'relation' && (isString(value) || isStringArray(value))}
 	<RelationRenderer {options} {record} {attrs} bind:value />
-	<!-- {:else if type === 'json' && isString(value)}
-	<JsonRenderer {value} /> -->
+{:else if type === 'json'}
+	<JsonRenderer bind:value />
 {:else}
 	<CommonRenderer bind:value {attrs} />
 {/if}

@@ -36,6 +36,7 @@
 
 	const form = superForm(editableRecord, {
 		SPA: true,
+		dataType: 'json',
 		validators: dynamicSchema,
 		onUpdate: async ({ form }) => {
 			console.log(form);
