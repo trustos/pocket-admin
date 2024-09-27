@@ -7,6 +7,7 @@
 	import { fieldIcons } from '$lib/types';
 	import pb from '$lib/pocketbase';
 	import { RecordField } from '$lib/components/record';
+	import { excludeRecordProperties } from '$lib/helpers';
 
 	export let data: PageData;
 	export let className = '';
@@ -17,10 +18,23 @@
 
 	import { superForm } from 'sveltekit-superforms';
 	import { zod } from 'sveltekit-superforms/adapters';
+	import type { RecordModel } from 'pocketbase';
 
 	const dynamicSchema = zod(recordSchema(schema));
 
-	const form = superForm(record, {
+	// Exclude fields that should not be editable
+	const nonEditableFields = [
+		'id',
+		'created',
+		'updated',
+		'collectionId',
+		'collectionName',
+		'expand'
+	];
+
+	const editableRecord = excludeRecordProperties(record, nonEditableFields);
+
+	const form = superForm(editableRecord, {
 		SPA: true,
 		validators: dynamicSchema,
 		onUpdate: async ({ form }) => {

@@ -22,6 +22,7 @@
 
 <DataTable
 	data={collections}
+	filterPlaceholder="Filter collections"
 	{schema}
 	showHeaderIcons={false}
 	title="Collections"

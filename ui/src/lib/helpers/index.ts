@@ -1,4 +1,5 @@
 import { base } from '$app/paths';
+import type { RecordModel } from 'pocketbase';
 
 export const removeTrailingSlash = (str: string) => str.replace(/\/$/, '');
 
@@ -30,3 +31,15 @@ export const utcDate = (date: Date) =>
 			date.getUTCSeconds()
 		)
 	);
+
+export const excludeRecordProperties = (
+	obj: RecordModel,
+	propsToExclude: (keyof RecordModel)[]
+): RecordModel => {
+	return Object.keys(obj).reduce((newObj, key) => {
+		if (!propsToExclude.includes(key as keyof RecordModel)) {
+			newObj[key as keyof RecordModel] = obj[key as keyof RecordModel];
+		}
+		return newObj;
+	}, {} as RecordModel);
+};

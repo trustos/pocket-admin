@@ -6,7 +6,6 @@
 	import { pushState, preloadData, goto } from '$app/navigation';
 	import { page } from '$app/stores';
 	import * as Drawer from '$lib/shadcn/components/ui/drawer';
-	import { writable } from 'svelte/store';
 
 	export let data: PageData;
 
@@ -53,7 +52,14 @@
 </script>
 
 {#key schema}
-	<DataTable {title} {schema} data={items} rowClickCallback={onRecordRowClick} />
+	<DataTable
+		filterPlaceholder={'Filter records'}
+		{title}
+		{schema}
+		data={items}
+		description={`All available records for ${title}`}
+		rowClickCallback={onRecordRowClick}
+	/>
 
 	<!-- {#if pageDataAvailable} -->
 	<Drawer.Root
@@ -67,7 +73,7 @@
 				<Drawer.Title class="font-normal"
 					>Editing <span class="font-bold">{title}</span> record</Drawer.Title
 				>
-				<Drawer.Description>This action cannot be undone.</Drawer.Description>
+				<!-- <Drawer.Description>This action cannot be undone.</Drawer.Description> -->
 				<RecordPage
 					destroyCallback={onRecordClose}
 					class="mt-5 max-h-[75vh] pt-5"

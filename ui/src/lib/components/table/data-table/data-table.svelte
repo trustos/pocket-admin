@@ -41,6 +41,7 @@
 	export let description: string = '';
 	export let showHeaderIcons: boolean = true;
 	export let rowClickCallback: (event: Event, row: Collection) => void = () => {};
+	export let filterPlaceholder: string = '';
 
 	const table = createTable(readable(data), {
 		page: addPagination(),
@@ -132,13 +133,13 @@
 	const ids = flatColumns.map((col) => col.id);
 	let hideForId = Object.fromEntries(ids.map((id) => [id, true]));
 
-	$: $hiddenColumnIds = Object.entries(hideForId)
-		.filter(([, hide]) => !hide)
-		.map(([id]) => id);
-
 	const colsForHiding = colKeys.map(({ name }) => name);
 
 	const hidableCols = [...colsForHiding, 'id', 'created', 'updated'];
+
+	$: $hiddenColumnIds = Object.entries(hideForId)
+		.filter(([, hide]) => !hide)
+		.map(([id]) => id);
 </script>
 
 <Card.Root>
@@ -151,7 +152,7 @@
 		<div class="flex items-center py-4">
 			<Input
 				class="focus:bg-muted-400 max-w-md"
-				placeholder="Filter collections"
+				placeholder={filterPlaceholder}
 				type="text"
 				bind:value={$filterValue}
 			/>
