@@ -128,28 +128,32 @@
 				>Choose the {singleRelation ? 'record' : 'records'} you want to add.</DialogDescription
 			>
 		</DialogHeader>
-		<div class="grid gap-4 py-4">
+		<div>
 			<Input type="search" placeholder="Filter records..." bind:value={searchQuery} />
 			{#if singleRelation}
-				<RadioGroup bind:value={selectedRadioValue}>
+				<div class="grid max-h-72 gap-4 overflow-auto py-4">
+					<RadioGroup bind:value={selectedRadioValue}>
+						{#each filteredRelations as relation (relation.id)}
+							<div class="flex items-center space-x-2">
+								<RadioGroupItem value={relation.id} id={relation.id} />
+								<Label for={relation.id}>{getRelationName(relation)}</Label>
+							</div>
+						{/each}
+					</RadioGroup>
+				</div>
+			{:else}
+				<div class="grid max-h-72 gap-4 overflow-auto py-4">
 					{#each filteredRelations as relation (relation.id)}
 						<div class="flex items-center space-x-2">
-							<RadioGroupItem value={relation.id} id={relation.id} />
+							<Checkbox
+								id={relation.id}
+								checked={tempSelectedRelations.some((r) => r.id === relation.id)}
+								onCheckedChange={() => toggleRelation(relation)}
+							/>
 							<Label for={relation.id}>{getRelationName(relation)}</Label>
 						</div>
 					{/each}
-				</RadioGroup>
-			{:else}
-				{#each filteredRelations as relation (relation.id)}
-					<div class="flex items-center space-x-2">
-						<Checkbox
-							id={relation.id}
-							checked={tempSelectedRelations.some((r) => r.id === relation.id)}
-							onCheckedChange={() => toggleRelation(relation)}
-						/>
-						<Label for={relation.id}>{getRelationName(relation)}</Label>
-					</div>
-				{/each}
+				</div>
 			{/if}
 		</div>
 		<DialogFooter>
