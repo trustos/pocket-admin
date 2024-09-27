@@ -5,6 +5,7 @@
 	import type { RecordModel } from 'pocketbase';
 	import Info from 'lucide-svelte/icons/info';
 	import * as Tooltip from '$lib/shadcn/components/ui/tooltip';
+	import { getRelationName } from '$lib/helpers';
 
 	export let value: string | string[];
 	export let record: Collection;
@@ -19,14 +20,14 @@
 
 		if (Array.isArray(result)) {
 			return result.map((r) => ({
-				value: r?.['name'] || r?.['title'] || r?.id,
+				value: getRelationName(r),
 				record: r
 			}));
 		}
 
 		return [
 			{
-				value: result?.['name'] || result?.['title'] || result?.id,
+				value: getRelationName(result),
 				record: result
 			}
 		];
@@ -35,7 +36,7 @@
 	const relations = getValue(record, fieldName);
 </script>
 
-{#if value}
+{#if value && value.length > 0}
 	{#each relations as relation}
 		{#if isExpanded(fieldName)}
 			<Badge class="mb-2" variant="outline">
@@ -43,7 +44,7 @@
 					<Tooltip.Trigger>
 						<Info class="inline w-4" />
 					</Tooltip.Trigger>
-					<Tooltip.Content>
+					<Tooltip.Content class="max-w-96">
 						<pre>{JSON.stringify(relation.record, null, 2)}</pre>
 					</Tooltip.Content>
 				</Tooltip.Root>

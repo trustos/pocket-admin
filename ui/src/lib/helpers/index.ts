@@ -43,3 +43,9 @@ export const excludeRecordProperties = (
 		return newObj;
 	}, {} as RecordModel);
 };
+
+export const getRelationName = (relation: RecordModel | undefined) => {
+	return relation
+		? relation?.name || relation?.title || relation?.email || relation?.id
+		: 'Unknown';
+};

@@ -22,8 +22,8 @@ export type SchemaField = {
 	name: string;
 	type: SchemaFiledType;
 	options?: {
-		min?: number;
-		max?: number;
+		min?: number | string | null;
+		max?: number | string | null;
 		maxSelect?: number;
 		maxSize?: number;
 		protected?: boolean;
@@ -32,6 +32,9 @@ export type SchemaField = {
 		convertUrls?: boolean;
 		noDecimal?: boolean;
 		values?: string[];
+		cascadeDelete?: boolean;
+		collectionId?: string;
+		displayFields?: string[] | null;
 	};
 	required?: boolean;
 	system?: boolean;

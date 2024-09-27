@@ -51,14 +51,14 @@ const generateZodSchema = (fields: CollectionSchema) => {
 				);
 
 				if (field.options?.min !== undefined && field.options.min !== null) {
-					const min = field.options.min;
+					const min = Number(field.options.min);
 					fieldSchema = fieldSchema.refine((n) => n >= min, {
 						message: `Value must be at least ${min}`
 					});
 				}
 
 				if (field.options?.max !== undefined && field.options.max !== null) {
-					const max = field.options.max;
+					const max = Number(field.options.max);
 					fieldSchema = fieldSchema.refine((n) => n <= max, {
 						message: `Value must be at most ${max}`
 					});
@@ -94,7 +94,13 @@ const generateZodSchema = (fields: CollectionSchema) => {
 				break;
 
 			case 'relation':
-				fieldSchema = z.string(); // Assuming relation is by an ID string
+				if (field?.options?.values && field.options.values.length > 0) {
+					const validValues = field.options.values as [string, ...string[]];
+					fieldSchema = z.union([z.enum(validValues), z.array(z.enum(validValues))]);
+				} else {
+					// Fallback to any string if no valid values are provided
+					fieldSchema = z.union([z.string(), z.array(z.string())]);
+				} // Assuming relation is by an ID string
 				break;
 
 			case 'json':

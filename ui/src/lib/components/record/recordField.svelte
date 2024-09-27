@@ -70,7 +70,7 @@
 {:else if type === 'select' && (isString(value) || isStringArray(value))}
 	<SelectRenderer {options} {attrs} bind:value />
 {:else if type === 'relation' && (isString(value) || isStringArray(value))}
-	<RelationRenderer {record} {attrs} bind:value />
+	<RelationRenderer {options} {record} {attrs} bind:value />
 	<!-- {:else if type === 'json' && isString(value)}
 	<JsonRenderer {value} /> -->
 {:else}

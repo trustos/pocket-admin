@@ -7,4 +7,4 @@ export { default as EmailRenderer } from '$lib/components/record/renderers/email
 export { default as UrlRenderer } from '$lib/components/record/renderers/url.svelte';
 export { default as DateRenderer } from '$lib/components/record/renderers/date/date.svelte';
 export { default as SelectRenderer } from '$lib/components/record/renderers/select.svelte';
-export { default as RelationRenderer } from '$lib/components/record/renderers/relation.svelte';
+export { default as RelationRenderer } from '$lib/components/record/renderers/relation/relation.svelte';

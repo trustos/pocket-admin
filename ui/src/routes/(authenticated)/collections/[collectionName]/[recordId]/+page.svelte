@@ -38,6 +38,7 @@
 		SPA: true,
 		validators: dynamicSchema,
 		onUpdate: async ({ form }) => {
+			console.log(form);
 			if (form.valid) {
 				pb.collection(record.collectionName).update(record.id, form.data);
 				// try {

@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { createEventDispatcher } from 'svelte';
 	import { Button } from '$lib/shadcn/components/ui/button';
 	import {
 		Dialog,
@@ -10,91 +11,146 @@
 	} from '$lib/shadcn/components/ui/dialog';
 	import { Input } from '$lib/shadcn/components/ui/input';
 	import { Label } from '$lib/shadcn/components/ui/label';
+	import { RadioGroup, RadioGroupItem } from '$lib/shadcn/components/ui/radio-group';
+	import { Checkbox } from '$lib/shadcn/components/ui/checkbox';
 	import { onMount } from 'svelte';
 	import RelationList from './relation-list.svelte';
 	import type { RecordModel } from 'pocketbase';
-	// import type { Relation } from './types';
-
-	interface Relation {
-		id: string;
-		name: string;
-	}
+	import pb from '$lib/pocketbase';
+	import { getRelationName } from '$lib/helpers';
 
 	export let selectedRelations: RecordModel[] = [];
-	export let allRelations: Relation[] = [];
+	selectedRelations = selectedRelations.map((r) => ({ ...r, name: getRelationName(r) }));
+
+	export let allRelations: RecordModel[] = [];
+	export let singleRelation: boolean;
+	export let pickerCollectionId: string | undefined;
+
+	console.log(singleRelation);
+
 	let dialogOpen = false;
-	let tempSelectedRelations: Relation[] = [];
+	let tempSelectedRelations: RecordModel[] = [];
+	let hiddenInputValue = '';
+	let searchQuery = '';
+	let selectedRadioValue = '';
+
+	const dispatch = createEventDispatcher();
 
 	onMount(async () => {
-		// Fetch relations from Pocketbase
-		// This is a placeholder. Replace with actual Pocketbase fetch logic
-		allRelations = await fetchRelationsFromPocketbase();
+		if (pickerCollectionId) {
+			allRelations = await fetchRelationsFromPocketbase(pickerCollectionId);
+		}
+
+		if (singleRelation && selectedRelations.length > 0) {
+			selectedRadioValue = selectedRelations[0].id;
+		}
 	});
 
 	function openDialog() {
 		tempSelectedRelations = [...selectedRelations];
+		if (singleRelation && tempSelectedRelations.length > 0) {
+			selectedRadioValue = tempSelectedRelations[0].id;
+		}
 		dialogOpen = true;
 	}
 
 	function closeDialog() {
 		dialogOpen = false;
+		searchQuery = '';
 	}
 
 	function confirmSelection() {
-		selectedRelations = [...tempSelectedRelations];
+		if (singleRelation) {
+			selectedRelations = allRelations.filter((r) => r.id === selectedRadioValue);
+		} else {
+			selectedRelations = [...tempSelectedRelations];
+		}
+		dispatchChange();
 		closeDialog();
 	}
 
-	function toggleRelation(relation: Relation) {
-		const index = tempSelectedRelations.findIndex((r) => r.id === relation.id);
-		if (index > -1) {
-			tempSelectedRelations.splice(index, 1);
+	function dispatchChange() {
+		dispatch('change', { selectedRelations });
+	}
+
+	function toggleRelation(relation: RecordModel) {
+		if (singleRelation) {
+			selectedRadioValue = relation.id;
 		} else {
-			tempSelectedRelations.push(relation);
+			const index = tempSelectedRelations.findIndex((r) => r.id === relation.id);
+			if (index > -1) {
+				tempSelectedRelations.splice(index, 1);
+			} else {
+				tempSelectedRelations.push(relation);
+			}
+			tempSelectedRelations = tempSelectedRelations;
 		}
-		tempSelectedRelations = tempSelectedRelations;
 	}
 
-	function removeRelation(relation: Relation) {
+	function removeRelation(relation: RecordModel) {
 		selectedRelations = selectedRelations.filter((r) => r.id !== relation.id);
+		dispatchChange();
 	}
 
-	async function fetchRelationsFromPocketbase() {
-		// Implement your Pocketbase fetch logic here
-		// This is just a placeholder
-		return [
-			{ id: '1', name: 'Relation 1' },
-			{ id: '2', name: 'Relation 2' },
-			{ id: '3', name: 'Relation 3' }
-		];
+	async function fetchRelationsFromPocketbase(collectionId: string) {
+		const collection = await pb.collection(collectionId).getFullList();
+		return collection || [];
+	}
+
+	$: filteredRelations = allRelations.filter((relation) =>
+		Object.values(relation).some((value) =>
+			String(value).toLowerCase().includes(searchQuery.toLowerCase())
+		)
+	);
+
+	$: {
+		hiddenInputValue = selectedRelations.map((r) => r.id).join(',');
 	}
 </script>
 
 <div>
-	<Label for="relations">Selected Relations</Label>
-	<RelationList relations={selectedRelations} onRemove={removeRelation} />
-	<Button on:click={openDialog}>Pick Relations</Button>
-	<Input type="hidden" name="relations" value={selectedRelations.map((r) => r.id).join(',')} />
+	{#if selectedRelations.length}
+		<RelationList relations={selectedRelations} onRemove={removeRelation} />
+	{/if}
+
+	<Button class="mt-2" on:click={openDialog}>Open Picker</Button>
+	<Input type="hidden" value={hiddenInputValue} />
 </div>
 
 <Dialog bind:open={dialogOpen}>
-	<DialogContent>
+	<DialogContent class="sm:max-w-[425px]">
 		<DialogHeader>
-			<DialogTitle>Select Relations</DialogTitle>
-			<DialogDescription>Choose the relations you want to add.</DialogDescription>
+			<DialogTitle class="font-normal"
+				>Select <b>{allRelations[0].collectionName}</b>
+				{singleRelation ? 'record' : 'records'}</DialogTitle
+			>
+			<DialogDescription
+				>Choose the {singleRelation ? 'record' : 'records'} you want to add.</DialogDescription
+			>
 		</DialogHeader>
 		<div class="grid gap-4 py-4">
-			{#each allRelations as relation}
-				<div class="flex items-center space-x-2">
-					<Input
-						type="checkbox"
-						id={relation.id}
-						checked={tempSelectedRelations.some((r) => r.id === relation.id)}
-						on:change={() => toggleRelation(relation)}
-					/>
-					<Label for={relation.id}>{relation.name}</Label>
-				</div>
-			{/each}
+			<Input type="search" placeholder="Filter records..." bind:value={searchQuery} />
+			{#if singleRelation}
+				<RadioGroup bind:value={selectedRadioValue}>
+					{#each filteredRelations as relation (relation.id)}
+						<div class="flex items-center space-x-2">
+							<RadioGroupItem value={relation.id} id={relation.id} />
+							<Label for={relation.id}>{getRelationName(relation)}</Label>
+						</div>
+					{/each}
+				</RadioGroup>
+			{:else}
+				{#each filteredRelations as relation (relation.id)}
+					<div class="flex items-center space-x-2">
+						<Checkbox
+							id={relation.id}
+							checked={tempSelectedRelations.some((r) => r.id === relation.id)}
+							onCheckedChange={() => toggleRelation(relation)}
+						/>
+						<Label for={relation.id}>{getRelationName(relation)}</Label>
+					</div>
+				{/each}
+			{/if}
 		</div>
 		<DialogFooter>
 			<Button on:click={closeDialog} variant="outline">Cancel</Button>
