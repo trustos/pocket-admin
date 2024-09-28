@@ -73,13 +73,14 @@
 				<Drawer.Title class="font-normal"
 					>Editing <span class="font-bold">{title}</span> record</Drawer.Title
 				>
-				<!-- <Drawer.Description>This action cannot be undone.</Drawer.Description> -->
-				<RecordPage
-					destroyCallback={onRecordClose}
-					class="mt-5 max-h-[75vh] pt-5"
-					data={{ ...JSON.parse(JSON.stringify($page.state.recordPageData)) }}
-				/>
 			</Drawer.Header>
+
+			<!-- <Drawer.Description>This action cannot be undone.</Drawer.Description> -->
+			<RecordPage
+				destroyCallback={onRecordClose}
+				class="mt-5 h-full pt-5"
+				data={{ ...JSON.parse(JSON.stringify($page.state.recordPageData)) }}
+			/>
 		</Drawer.Content>
 	</Drawer.Root>
 	<!-- {/if} -->

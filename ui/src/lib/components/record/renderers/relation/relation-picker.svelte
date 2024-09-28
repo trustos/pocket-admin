@@ -26,8 +26,6 @@
 	export let singleRelation: boolean;
 	export let pickerCollectionId: string | undefined;
 
-	console.log(singleRelation);
-
 	let dialogOpen = false;
 	let tempSelectedRelations: RecordModel[] = [];
 	let hiddenInputValue = '';

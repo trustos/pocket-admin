@@ -10,7 +10,8 @@
 		DateRenderer,
 		SelectRenderer,
 		RelationRenderer,
-		JsonRenderer
+		JsonRenderer,
+		EditorRenderer
 	} from '$lib/components/record/renderers';
 	import type { RecordModel } from 'pocketbase';
 
@@ -54,8 +55,8 @@
 	<TextRenderer {attrs} bind:value />
 {:else if type === 'file'}
 	<FileRenderer {options} {form} bind:value {attrs} {record} />
-	<!-- {:else if type === 'editor' && isString(value)}
-	<EditorRenderer {value} /> -->
+{:else if type === 'editor' && isString(value)}
+	<EditorRenderer bind:value />
 {:else if type === 'email' && isString(value)}
 	<EmailRenderer {attrs} bind:value />
 {:else if type === 'url' && isString(value)}

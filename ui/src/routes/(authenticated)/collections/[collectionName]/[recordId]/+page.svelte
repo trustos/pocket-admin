@@ -70,7 +70,10 @@
 >
 	<form method="POST" use:enhance enctype="multipart/form-data">
 		<Card.Root class="relative mx-auto w-full">
-			<Card.Content class={`space-y-4 overflow-auto pb-24 pt-5 ${className ? 'max-h-[75vh]' : ''}`}>
+			<Card.Content
+				autofocus={false}
+				class={`space-y-4 overflow-auto pb-24 pt-5 ${className ? 'max-h-[85vh]' : ''}`}
+			>
 				<div class="text-left">
 					<span class="text-muted-foreground">
 						<svelte:component this={fieldIcons['id']} class="inline w-4" />

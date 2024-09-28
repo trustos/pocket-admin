@@ -10,7 +10,6 @@
 
 	let singleRelation = options?.maxSelect != null && options.maxSelect <= 1;
 
-	console.log(singleRelation);
 	const getValue = (record: RecordModel, name: string) => {
 		const result = record?.expand && (record?.expand[name as keyof RecordModel] as RecordModel);
 

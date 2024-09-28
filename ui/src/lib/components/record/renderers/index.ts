@@ -9,3 +9,4 @@ export { default as DateRenderer } from '$lib/components/record/renderers/date/d
 export { default as SelectRenderer } from '$lib/components/record/renderers/select.svelte';
 export { default as RelationRenderer } from '$lib/components/record/renderers/relation/relation.svelte';
 export { default as JsonRenderer } from '$lib/components/record/renderers/json.svelte';
+export { default as EditorRenderer } from '$lib/components/record/renderers/editor.svelte';
