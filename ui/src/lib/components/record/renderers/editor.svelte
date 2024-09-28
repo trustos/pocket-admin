@@ -5,9 +5,20 @@
 	import { Editor } from '@tiptap/core';
 	import StarterKit from '@tiptap/starter-kit';
 	import TextAlign from '@tiptap/extension-text-align';
-
 	import Image from '@tiptap/extension-image';
+	import Table from '@tiptap/extension-table';
+	import TableRow from '@tiptap/extension-table-row';
+	import TableCell from '@tiptap/extension-table-cell';
+	import TableHeader from '@tiptap/extension-table-header';
+	import CodeBlockLowlight from '@tiptap/extension-code-block-lowlight';
+	import Underline from '@tiptap/extension-underline';
+	import Strike from '@tiptap/extension-strike';
+	import Link from '@tiptap/extension-link';
+	import { common, createLowlight } from 'lowlight';
+	const lowlight = createLowlight(common);
+
 	import { Button } from '$lib/shadcn/components/ui/button';
+	import { Separator } from '$lib/shadcn/components/ui/separator';
 	import { ToggleGroup, ToggleGroupItem } from '$lib/shadcn/components/ui/toggle-group';
 	import {
 		DropdownMenu,
@@ -20,8 +31,7 @@
 		DialogContent,
 		DialogDescription,
 		DialogHeader,
-		DialogTitle,
-		DialogTrigger
+		DialogTitle
 	} from '$lib/shadcn/components/ui/dialog';
 	import { Input } from '$lib/shadcn/components/ui/input';
 	import { Label } from '$lib/shadcn/components/ui/label';
@@ -33,14 +43,18 @@
 		Italic,
 		List,
 		ListOrdered,
-		Link,
+		Link as LinkIcon,
 		Image as ImageIcon,
-		Table,
+		Table as TableIcon,
 		Code,
-		Maximize2
+		Maximize2,
+		Underline as UnderlineIcon,
+		Strikethrough
 	} from 'lucide-svelte';
+	import { Tooltip } from '$lib/components/common';
 
 	let editor: Editor;
+	let isFullscreen = false;
 
 	const decodedContent = (encodedContent: string) =>
 		decodeURIComponent(encodedContent.replace(/\+/g, ' '));
@@ -50,10 +64,8 @@
 			element: document.querySelector('#editor')!,
 			extensions: [
 				StarterKit.configure({
-					// Disable an included extension
-					// history: true,
-
-					// Configure an included extension
+					codeBlock: false, // Disable the default CodeBlock
+					strike: false, // Disable the default Strike
 					heading: {
 						levels: [1, 2, 3, 4, 5, 6]
 					}
@@ -61,42 +73,108 @@
 				TextAlign.configure({
 					types: ['heading', 'paragraph']
 				}),
-				Image
+				Image,
+				Table,
+				TableRow,
+				TableCell,
+				TableHeader,
+				CodeBlockLowlight.configure({
+					lowlight
+				}),
+				Link,
+				Underline,
+				Strike
 			],
 			content: decodedContent(value),
 			onUpdate: ({ editor }) => {
-				// Handle content update
 				value = editor.getHTML();
+
+				activeHeading = editor.isActive('heading')
+					? `h${editor.getAttributes('heading').level}`
+					: null;
+
+				updateActiveStates();
+			},
+			onSelectionUpdate: () => {
+				updateActiveStates();
 			}
+		});
+
+		editor.on('selectionUpdate', () => {
+			activeHeading = editor.isActive('heading')
+				? `h${editor.getAttributes('heading').level}`
+				: null;
+
+			updateActiveStates();
 		});
 	});
 
 	onDestroy(() => {
 		if (editor) {
+			editor.off('selectionUpdate', updateActiveStates);
+			editor.off('update', updateActiveStates);
 			editor.destroy();
 		}
 	});
 
-	function toggleBold() {
-		editor.chain().focus().toggleBold().run();
+	function updateActiveStates() {
+		if (editor) {
+			activeToggles = {
+				bold: editor.isActive('bold'),
+				italic: editor.isActive('italic'),
+				underline: editor.isActive('underline'),
+				strike: editor.isActive('strike'),
+				bulletList: editor.isActive('bulletList'),
+				orderedList: editor.isActive('orderedList')
+			};
+
+			activeAlignment = editor.isActive({ textAlign: 'left' })
+				? 'left'
+				: editor.isActive({ textAlign: 'center' })
+					? 'center'
+					: editor.isActive({ textAlign: 'right' })
+						? 'right'
+						: undefined;
+		}
 	}
 
-	function toggleItalic() {
-		editor.chain().focus().toggleItalic().run();
-	}
-
-	function setAlignment(alignment: 'left' | 'center' | 'right' | undefined) {
-		if (alignment) {
-			editor.commands.setTextAlign(alignment);
+	function setAlignment(alignment: string | undefined) {
+		if (alignment === 'left' || alignment === 'center' || alignment === 'right') {
+			editor.chain().focus().setTextAlign(alignment).run();
 		}
 	}
 
 	function toggleList(type: 'bullet' | 'ordered') {
 		if (type === 'bullet') {
-			editor.chain().focus().toggleBulletList().run();
+			if (editor.isActive('bulletList')) {
+				editor.chain().focus().liftListItem('listItem').run();
+			} else {
+				editor.chain().focus().toggleBulletList().run();
+			}
 		} else {
-			editor.chain().focus().toggleOrderedList().run();
+			if (editor.isActive('orderedList')) {
+				editor.chain().focus().liftListItem('listItem').run();
+			} else {
+				editor.chain().focus().toggleOrderedList().run();
+			}
 		}
+		updateActiveStates();
+	}
+
+	function handleListChange(values: string[]) {
+		const hasBullet = values.includes('bullet');
+		const hasOrdered = values.includes('ordered');
+
+		if (hasBullet && !hasOrdered) {
+			editor.chain().focus().toggleBulletList().run();
+		} else if (hasOrdered && !hasBullet) {
+			editor.chain().focus().toggleOrderedList().run();
+		} else if (!hasBullet && !hasOrdered) {
+			// If neither is selected, lift the list items
+			editor.chain().focus().liftListItem('listItem').run();
+		}
+
+		updateActiveStates();
 	}
 
 	let linkUrl = '';
@@ -115,99 +193,224 @@
 	}
 
 	function toggleFullscreen() {
-		// Implement fullscreen toggle logic here
+		isFullscreen = !isFullscreen;
+		document.body.classList.toggle('overflow-hidden', isFullscreen);
 	}
 
+	function insertImage() {
+		const url = window.prompt('Enter the URL of the image:');
+		if (url) {
+			editor.chain().focus().setImage({ src: url }).run();
+		}
+	}
+
+	function insertTable() {
+		editor.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run();
+	}
+
+	function insertCode() {
+		editor.chain().focus().toggleCodeBlock().run();
+	}
+
+	function getHeadingLevel(num: number): 1 | 2 | 3 | 4 | 5 | 6 {
+		if (num >= 1 && num <= 6) {
+			return num as 1 | 2 | 3 | 4 | 5 | 6;
+		}
+		throw new Error('Invalid heading level');
+	}
+
+	function handleTextStyleChange(values: string[] | undefined) {
+		if (!editor || !values) return;
+
+		const styles = ['bold', 'italic', 'underline', 'strike'] as const;
+		styles.forEach((style) => {
+			const isActive = values.includes(style);
+			switch (style) {
+				case 'bold':
+					if (isActive) editor.chain().focus().setBold().run();
+					else editor.chain().focus().unsetBold().run();
+					break;
+				case 'italic':
+					if (isActive) editor.chain().focus().setItalic().run();
+					else editor.chain().focus().unsetItalic().run();
+					break;
+				case 'underline':
+					if (isActive) editor.chain().focus().setUnderline().run();
+					else editor.chain().focus().unsetUnderline().run();
+					break;
+				case 'strike':
+					if (isActive) editor.chain().focus().setStrike().run();
+					else editor.chain().focus().unsetStrike().run();
+					break;
+			}
+		});
+
+		updateActiveStates();
+	}
 	export let value: RecordModel[keyof RecordModel];
 
-	const handleSetAlignment = (alignment: string | undefined) => {
-		setAlignment(alignment as 'left' | 'center' | 'right' | undefined);
+	$: activeToggles = {
+		bold: editor?.isActive('bold') ?? false,
+		italic: editor?.isActive('italic') ?? false,
+		underline: editor?.isActive('underline') ?? false,
+		strike: editor?.isActive('strike') ?? false,
+		bulletList: editor?.isActive('bulletList') ?? false,
+		orderedList: editor?.isActive('orderedList') ?? false
 	};
+	$: activeHeading = editor?.isActive('heading')
+		? `h${editor.getAttributes('heading').level}`
+		: null;
+
+	$: activeAlignment = editor?.isActive({ textAlign: 'left' })
+		? 'left'
+		: editor?.isActive({ textAlign: 'center' })
+			? 'center'
+			: editor?.isActive({ textAlign: 'right' })
+				? 'right'
+				: undefined;
 </script>
 
-<div class="rounded-md border border-gray-200 bg-muted p-4">
+<div class="rounded-md border border-gray-200 bg-muted p-4" class:fullscreen={isFullscreen}>
 	<div class="mb-4 flex flex-wrap gap-2">
-		<DropdownMenu>
-			<DropdownMenuTrigger>
-				<Button variant="outline">Headings</Button>
-			</DropdownMenuTrigger>
-			<DropdownMenuContent>
-				{#each Array(6) as _, i}
-					<DropdownMenuItem
-						on:click={() =>
-							editor
-								.chain()
-								.focus()
-								.toggleHeading({ level: i + 1 })
-								.run()}
-					>
-						Heading {i + 1}
-					</DropdownMenuItem>
-				{/each}
-			</DropdownMenuContent>
-		</DropdownMenu>
+		<Tooltip text="Change heading level">
+			<DropdownMenu>
+				<DropdownMenuTrigger>
+					<Button variant="outline">
+						{activeHeading ? `Heading ${activeHeading.slice(1)}` : 'Headings'}
+					</Button>
+				</DropdownMenuTrigger>
+				<DropdownMenuContent>
+					{#each Array(6) as _, i (i)}
+						<DropdownMenuItem
+							on:click={() =>
+								editor
+									.chain()
+									.focus()
+									.toggleHeading({ level: getHeadingLevel(i + 1) })
+									.run()}
+							class={`${activeHeading === `h${i + 1}` ? 'active' : ''}`}
+						>
+							Heading {i + 1}
+						</DropdownMenuItem>
+					{/each}
+				</DropdownMenuContent>
+			</DropdownMenu>
+		</Tooltip>
 
-		<ToggleGroup variant="outline" type="single" onValueChange={handleSetAlignment}>
-			<ToggleGroupItem class="bg-card" value="left" aria-label="Align left">
-				<AlignLeft class="h-4 w-4" />
-			</ToggleGroupItem>
-			<ToggleGroupItem class="bg-card" value="center" aria-label="Align center">
-				<AlignCenter class="h-4 w-4" />
-			</ToggleGroupItem>
-			<ToggleGroupItem class="bg-card" value="right" aria-label="Align right">
-				<AlignRight class="h-4 w-4" />
-			</ToggleGroupItem>
+		<Separator orientation="vertical" />
+
+		<ToggleGroup
+			variant="outline"
+			type="single"
+			value={activeAlignment}
+			onValueChange={setAlignment}
+		>
+			<Tooltip text="Align left">
+				<ToggleGroupItem class="bg-card" value="left" aria-label="Align left">
+					<AlignLeft class="h-4 w-4" />
+				</ToggleGroupItem>
+			</Tooltip>
+			<Tooltip text="Align center">
+				<ToggleGroupItem class="bg-card" value="center" aria-label="Align center">
+					<AlignCenter class="h-4 w-4" />
+				</ToggleGroupItem>
+			</Tooltip>
+			<Tooltip text="Align right">
+				<ToggleGroupItem class="bg-card" value="right" aria-label="Align right">
+					<AlignRight class="h-4 w-4" />
+				</ToggleGroupItem>
+			</Tooltip>
 		</ToggleGroup>
 
-		<ToggleGroup type="multiple" variant="outline">
-			<ToggleGroupItem value="bold" aria-label="Toggle bold" on:click={toggleBold}>
-				<Bold class="h-4 w-4" />
-			</ToggleGroupItem>
-			<ToggleGroupItem value="italic" aria-label="Toggle italic" on:click={toggleItalic}>
-				<Italic class="h-4 w-4" />
-			</ToggleGroupItem>
+		<Separator orientation="vertical" />
+
+		<ToggleGroup
+			type="multiple"
+			variant="outline"
+			onValueChange={handleTextStyleChange}
+			value={Object.entries(activeToggles)
+				.filter(([_, isActive]) => isActive)
+				.map(([style]) => style)}
+		>
+			<Tooltip text="Bold">
+				<ToggleGroupItem class="bg-card" value="bold" aria-label="Toggle bold">
+					<Bold class="h-4 w-4" />
+				</ToggleGroupItem>
+			</Tooltip>
+			<Tooltip text="Toggle italic">
+				<ToggleGroupItem class="bg-card" value="italic" aria-label="Toggle italic">
+					<Italic class="h-4 w-4" />
+				</ToggleGroupItem>
+			</Tooltip>
+
+			<Tooltip text="Toggle underline">
+				<ToggleGroupItem class="bg-card" value="underline" aria-label="Toggle underline">
+					<UnderlineIcon class="h-4 w-4" />
+				</ToggleGroupItem>
+			</Tooltip>
+
+			<Tooltip text="Toggle strikethrough">
+				<ToggleGroupItem class="bg-card" value="strike" aria-label="Toggle strikethrough">
+					<Strikethrough class="h-4 w-4" />
+				</ToggleGroupItem>
+			</Tooltip>
 		</ToggleGroup>
 
-		<ToggleGroup type="single">
-			<ToggleGroupItem
-				value="bullet"
-				aria-label="Bullet list"
-				on:click={() => toggleList('bullet')}
-			>
-				<List class="h-4 w-4" />
-			</ToggleGroupItem>
-			<ToggleGroupItem
-				value="ordered"
-				aria-label="Numbered list"
-				on:click={() => toggleList('ordered')}
-			>
-				<ListOrdered class="h-4 w-4" />
-			</ToggleGroupItem>
+		<Separator orientation="vertical" />
+
+		<ToggleGroup
+			type="single"
+			variant="outline"
+			onValueChange={(value) => handleListChange(value ? [value] : [])}
+			value={activeToggles.bulletList
+				? 'bullet'
+				: activeToggles.orderedList
+					? 'ordered'
+					: undefined}
+		>
+			<Tooltip text="Bullet list">
+				<ToggleGroupItem class="bg-card" value="bullet" aria-label="Bullet list">
+					<List class="h-4 w-4" />
+				</ToggleGroupItem>
+			</Tooltip>
+			<Tooltip text="Numbered list">
+				<ToggleGroupItem class="bg-card" value="ordered" aria-label="Numbered list">
+					<ListOrdered class="h-4 w-4" />
+				</ToggleGroupItem>
+			</Tooltip>
 		</ToggleGroup>
 
-		<Button variant="outline" on:click={openLinkDialog}>
-			<Link class="mr-2 h-4 w-4" />
-			Insert Link
-		</Button>
+		<Separator orientation="vertical" />
 
-		<Button variant="outline">
-			<ImageIcon class="mr-2 h-4 w-4" />
-			Insert Image
-		</Button>
+		<Tooltip text="Insert link">
+			<Button variant="outline" on:click={openLinkDialog}>
+				<LinkIcon class="h-4 w-4" />
+			</Button>
+		</Tooltip>
 
-		<Button variant="outline">
-			<Table class="mr-2 h-4 w-4" />
-			Insert Table
-		</Button>
+		<Tooltip text="Insert Image">
+			<Button variant="outline" on:click={insertImage}>
+				<ImageIcon class="h-4 w-4" />
+			</Button>
+		</Tooltip>
 
-		<Button variant="outline">
-			<Code class="mr-2 h-4 w-4" />
-			Insert Code
-		</Button>
+		<Tooltip text="Insert Table">
+			<Button variant="outline" on:click={insertTable}>
+				<TableIcon class="h-4 w-4" />
+			</Button>
+		</Tooltip>
 
-		<Button variant="outline" on:click={toggleFullscreen}>
-			<Maximize2 class="h-4 w-4" />
-		</Button>
+		<Tooltip text="Insert Code">
+			<Button variant="outline" on:click={insertCode}>
+				<Code class="h-4 w-4" />
+			</Button>
+		</Tooltip>
+
+		<Tooltip text="Toggle fullscreen">
+			<Button variant="outline" on:click={toggleFullscreen}>
+				<Maximize2 class="h-4 w-4" />
+			</Button>
+		</Tooltip>
 	</div>
 
 	<div id="editor" class="prose max-w-none bg-card"></div>
@@ -232,5 +435,20 @@
 <style>
 	:global(.ProseMirror) {
 		@apply border-[1px] border-dashed border-[muted] p-2;
+	}
+
+	:global(.fullscreen) {
+		@apply fixed inset-0 z-50 h-screen w-screen overflow-auto;
+	}
+
+	:global(.fullscreen #editor) {
+		@apply h-[calc(100vh-4rem)];
+	}
+
+	:global(*[data-toggle-group-item][data-state='on']) {
+		@apply bg-primary text-primary-foreground;
+	}
+	:global(.active) {
+		@apply bg-primary text-primary-foreground;
 	}
 </style>
