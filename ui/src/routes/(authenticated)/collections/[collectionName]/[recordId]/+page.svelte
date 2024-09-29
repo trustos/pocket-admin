@@ -18,7 +18,6 @@
 
 	import { superForm } from 'sveltekit-superforms';
 	import { zod } from 'sveltekit-superforms/adapters';
-	import type { RecordModel } from 'pocketbase';
 
 	const dynamicSchema = zod(recordSchema(schema));
 
@@ -64,7 +63,7 @@
 
 <main
 	class={cn(
-		'grid flex-1 items-start gap-4 p-4 sm:px-6 sm:py-0 md:gap-8 lg:grid-cols-1 xl:grid-cols-1',
+		'flex-1 items-start gap-4 p-4 sm:px-6 sm:py-0 md:gap-8 lg:grid-cols-1 xl:grid-cols-1',
 		className
 	)}
 >

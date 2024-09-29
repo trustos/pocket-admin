@@ -143,12 +143,16 @@
 </script>
 
 <Card.Root>
-	<Card.Header class="px-7">
-		<Card.Title>{title}</Card.Title>
-		<Card.Description>{description}</Card.Description>
+	<Card.Header class="flex-col px-7 sm:flex-row sm:items-center sm:justify-between">
+		<div>
+			<Card.Title>{title}</Card.Title>
+			<Card.Description>{description}</Card.Description>
+		</div>
+		<div class="text-center">
+			<Button class="mt-6 self-end sm:mt-0" variant="default">Add new record</Button>
+		</div>
 	</Card.Header>
 	<Card.Content>
-		<!-- <Separator /> -->
 		<div class="flex items-center py-4">
 			<Input
 				class="focus:bg-muted-400 max-w-md"

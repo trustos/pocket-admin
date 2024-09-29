@@ -39,7 +39,7 @@
 	});
 </script>
 
-<main
+<!-- <main
 	class="grid flex-1 items-start gap-4 p-4 sm:px-6 sm:py-0 md:gap-8 lg:grid-cols-12 xl:grid-cols-12"
 >
 	<div class="col-span-2">
@@ -49,4 +49,16 @@
 	<div class="col-span-10 overflow-auto">
 		<slot></slot>
 	</div>
-</main>
+</main> -->
+
+<div class="flex h-full flex-col lg:flex-row">
+	<aside class="w-full lg:w-52">
+		<div class="sticky top-0 overflow-y-auto p-4">
+			<SideNav items={collectionItems} />
+		</div>
+	</aside>
+
+	<div class="flex-1 overflow-y-auto p-4">
+		<slot></slot>
+	</div>
+</div>

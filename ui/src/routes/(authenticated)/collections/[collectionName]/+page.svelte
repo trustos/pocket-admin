@@ -61,27 +61,23 @@
 		rowClickCallback={onRecordRowClick}
 	/>
 
-	<!-- {#if pageDataAvailable} -->
 	<Drawer.Root
 		shouldScaleBackground
 		open={pageDataAvailable}
 		onClose={onRecordClose}
 		backgroundColor={'black'}
 	>
-		<Drawer.Content>
+		<Drawer.Content class="max-h-[95vh] min-h-[95vh]">
 			<Drawer.Header>
 				<Drawer.Title class="font-normal"
 					>Editing <span class="font-bold">{title}</span> record</Drawer.Title
 				>
 			</Drawer.Header>
-
-			<!-- <Drawer.Description>This action cannot be undone.</Drawer.Description> -->
 			<RecordPage
 				destroyCallback={onRecordClose}
-				class="mt-5 h-full pt-5"
+				class="mt-[15px] h-full pt-5"
 				data={{ ...JSON.parse(JSON.stringify($page.state.recordPageData)) }}
 			/>
 		</Drawer.Content>
 	</Drawer.Root>
-	<!-- {/if} -->
 {/key}

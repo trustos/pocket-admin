@@ -81,7 +81,20 @@
 					}
 				}),
 				TextAlign.configure({
-					types: ['heading', 'paragraph']
+					types: [
+						'heading',
+						'paragraph',
+						'image',
+						'tableCell',
+						'tableHeader',
+						'tableRow',
+						'codeBlock',
+						'link',
+						'listItem',
+						'blockquote',
+						'horizontalRule',
+						'table'
+					]
 				}),
 				Image.configure({
 					inline: true,
@@ -305,11 +318,11 @@
 </script>
 
 <div
-	class="relative rounded-md border border-gray-200 bg-muted px-4 pb-4"
+	class="group/wrapper relative rounded-md border border-gray-200 bg-muted px-4 pb-4"
 	class:fullscreen={isFullscreen}
 >
-	<div class="sticky -top-[20px] z-10 bg-muted py-2">
-		<div class="flex flex-wrap gap-1">
+	<div class="sticky top-0 z-10 bg-muted py-2 group-[:not(.fullscreen)]/wrapper:-top-[20px]">
+		<div class="flex flex-wrap gap-1 p-2">
 			<Tooltip text="Change heading level">
 				<DropdownMenu>
 					<DropdownMenuTrigger>
@@ -446,8 +459,7 @@
 			</Tooltip>
 		</div>
 	</div>
-
-	<div id="editor"></div>
+	<div id="editor" class="overflow-auto"></div>
 </div>
 
 <Dialog bind:open={showLinkDialog}>
@@ -489,11 +501,7 @@
 
 <style>
 	:global(.ProseMirror) {
-		@apply border-[1px] border-dashed border-[muted] p-2;
-
-		/* & .column-resize-handle {
-			@apply absolute -right-1 top-0 h-full w-1 cursor-col-resize bg-red-800;
-		} */
+		@apply p-2;
 
 		& table {
 			@apply table-auto;
@@ -522,9 +530,10 @@
 		@apply fixed inset-0 z-50 !mt-0 h-screen w-screen overflow-auto;
 	}
 
-	/* :global(.fullscreen #editor) {
-		@apply h-full;
-	} */
+	:global([data-vaul-drawer] .fullscreen) {
+		/* @apply top-0; */
+		@apply h-full w-full;
+	}
 
 	:global(*[data-toggle-group-item][data-state='on']) {
 		@apply bg-primary text-primary-foreground;
