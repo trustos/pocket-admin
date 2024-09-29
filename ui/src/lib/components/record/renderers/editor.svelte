@@ -14,6 +14,8 @@
 	import Underline from '@tiptap/extension-underline';
 	import Strike from '@tiptap/extension-strike';
 	import Link from '@tiptap/extension-link';
+	import { BubbleMenu } from '@tiptap/extension-bubble-menu';
+	import { BubbleMenuPlugin } from '@tiptap/extension-bubble-menu';
 	import { common, createLowlight } from 'lowlight';
 	const lowlight = createLowlight(common);
 
@@ -55,13 +57,21 @@
 
 	let editor: Editor;
 	let isFullscreen = false;
-
-	const decodedContent = (encodedContent: string) =>
-		decodeURIComponent(encodedContent.replace(/\+/g, ' '));
+	let showLinkDialog = false;
+	let showImageDialog = false;
+	let linkUrl = '';
 
 	onMount(() => {
 		editor = new Editor({
 			element: document.querySelector('#editor')!,
+			editorProps: {
+				attributes: {
+					class:
+						// 'prose prose-sm sm:prose lg:prose-lg xl:prose-2xl mx-auto focus:outline-none max-w-none overflow-auto bg-card'
+						'prose max-w-none overflow-auto bg-card focus:outline-none'
+					// class="prose max-w-none overflow-auto bg-card"
+				}
+			},
 			extensions: [
 				StarterKit.configure({
 					codeBlock: false, // Disable the default CodeBlock
@@ -73,8 +83,13 @@
 				TextAlign.configure({
 					types: ['heading', 'paragraph']
 				}),
-				Image,
-				Table,
+				Image.configure({
+					inline: true,
+					allowBase64: true
+				}),
+				Table.configure({
+					resizable: true
+				}),
 				TableRow,
 				TableCell,
 				TableHeader,
@@ -83,9 +98,12 @@
 				}),
 				Link,
 				Underline,
-				Strike
+				Strike,
+				BubbleMenu.configure({
+					element: document.querySelector('.bubble-menu')!
+				})
 			],
-			content: decodedContent(value),
+			content: value,
 			onUpdate: ({ editor }) => {
 				value = editor.getHTML();
 
@@ -144,22 +162,22 @@
 		}
 	}
 
-	function toggleList(type: 'bullet' | 'ordered') {
-		if (type === 'bullet') {
-			if (editor.isActive('bulletList')) {
-				editor.chain().focus().liftListItem('listItem').run();
-			} else {
-				editor.chain().focus().toggleBulletList().run();
-			}
-		} else {
-			if (editor.isActive('orderedList')) {
-				editor.chain().focus().liftListItem('listItem').run();
-			} else {
-				editor.chain().focus().toggleOrderedList().run();
-			}
-		}
-		updateActiveStates();
-	}
+	// function toggleList(type: 'bullet' | 'ordered') {
+	// 	if (type === 'bullet') {
+	// 		if (editor.isActive('bulletList')) {
+	// 			editor.chain().focus().liftListItem('listItem').run();
+	// 		} else {
+	// 			editor.chain().focus().toggleBulletList().run();
+	// 		}
+	// 	} else {
+	// 		if (editor.isActive('orderedList')) {
+	// 			editor.chain().focus().liftListItem('listItem').run();
+	// 		} else {
+	// 			editor.chain().focus().toggleOrderedList().run();
+	// 		}
+	// 	}
+	// 	updateActiveStates();
+	// }
 
 	function handleListChange(values: string[]) {
 		const hasBullet = values.includes('bullet');
@@ -176,9 +194,6 @@
 
 		updateActiveStates();
 	}
-
-	let linkUrl = '';
-	let showLinkDialog = false;
 
 	function openLinkDialog() {
 		showLinkDialog = true;
@@ -198,9 +213,20 @@
 	}
 
 	function insertImage() {
-		const url = window.prompt('Enter the URL of the image:');
-		if (url) {
-			editor.chain().focus().setImage({ src: url }).run();
+		showImageDialog = true;
+	}
+
+	function handleImageUpload(event: Event) {
+		const input = event.target as HTMLInputElement;
+		const file = input.files?.[0];
+		if (file) {
+			const reader = new FileReader();
+			reader.onload = (e) => {
+				const result = e.target?.result as string;
+				editor.chain().focus().setImage({ src: result }).run();
+				showImageDialog = false;
+			};
+			reader.readAsDataURL(file);
 		}
 	}
 
@@ -218,6 +244,14 @@
 		}
 		throw new Error('Invalid heading level');
 	}
+
+	const toggleHeading = (level: number) => {
+		editor
+			.chain()
+			.focus()
+			.toggleHeading({ level: getHeadingLevel(level) })
+			.run();
+	};
 
 	function handleTextStyleChange(values: string[] | undefined) {
 		if (!editor || !values) return;
@@ -270,150 +304,150 @@
 				: undefined;
 </script>
 
-<div class="rounded-md border border-gray-200 bg-muted p-4" class:fullscreen={isFullscreen}>
-	<div class="mb-4 flex flex-wrap gap-2">
-		<Tooltip text="Change heading level">
-			<DropdownMenu>
-				<DropdownMenuTrigger>
-					<Button variant="outline">
-						{activeHeading ? `Heading ${activeHeading.slice(1)}` : 'Headings'}
-					</Button>
-				</DropdownMenuTrigger>
-				<DropdownMenuContent>
-					{#each Array(6) as _, i (i)}
-						<DropdownMenuItem
-							on:click={() =>
-								editor
-									.chain()
-									.focus()
-									.toggleHeading({ level: getHeadingLevel(i + 1) })
-									.run()}
-							class={`${activeHeading === `h${i + 1}` ? 'active' : ''}`}
-						>
-							Heading {i + 1}
-						</DropdownMenuItem>
-					{/each}
-				</DropdownMenuContent>
-			</DropdownMenu>
-		</Tooltip>
-
-		<Separator orientation="vertical" />
-
-		<ToggleGroup
-			variant="outline"
-			type="single"
-			value={activeAlignment}
-			onValueChange={setAlignment}
-		>
-			<Tooltip text="Align left">
-				<ToggleGroupItem class="bg-card" value="left" aria-label="Align left">
-					<AlignLeft class="h-4 w-4" />
-				</ToggleGroupItem>
-			</Tooltip>
-			<Tooltip text="Align center">
-				<ToggleGroupItem class="bg-card" value="center" aria-label="Align center">
-					<AlignCenter class="h-4 w-4" />
-				</ToggleGroupItem>
-			</Tooltip>
-			<Tooltip text="Align right">
-				<ToggleGroupItem class="bg-card" value="right" aria-label="Align right">
-					<AlignRight class="h-4 w-4" />
-				</ToggleGroupItem>
-			</Tooltip>
-		</ToggleGroup>
-
-		<Separator orientation="vertical" />
-
-		<ToggleGroup
-			type="multiple"
-			variant="outline"
-			onValueChange={handleTextStyleChange}
-			value={Object.entries(activeToggles)
-				.filter(([_, isActive]) => isActive)
-				.map(([style]) => style)}
-		>
-			<Tooltip text="Bold">
-				<ToggleGroupItem class="bg-card" value="bold" aria-label="Toggle bold">
-					<Bold class="h-4 w-4" />
-				</ToggleGroupItem>
-			</Tooltip>
-			<Tooltip text="Toggle italic">
-				<ToggleGroupItem class="bg-card" value="italic" aria-label="Toggle italic">
-					<Italic class="h-4 w-4" />
-				</ToggleGroupItem>
+<div
+	class="relative rounded-md border border-gray-200 bg-muted px-4 pb-4"
+	class:fullscreen={isFullscreen}
+>
+	<div class="sticky -top-[20px] z-10 bg-muted py-2">
+		<div class="flex flex-wrap gap-1">
+			<Tooltip text="Change heading level">
+				<DropdownMenu>
+					<DropdownMenuTrigger>
+						<Button variant="outline">
+							{activeHeading ? `Heading ${activeHeading.slice(1)}` : 'Headings'}
+						</Button>
+					</DropdownMenuTrigger>
+					<DropdownMenuContent>
+						{#each Array(6) as _, i (i)}
+							<DropdownMenuItem
+								on:click={() => toggleHeading(i + 1)}
+								class={`${activeHeading === `h${i + 1}` ? 'active' : ''}`}
+							>
+								Heading {i + 1}
+							</DropdownMenuItem>
+						{/each}
+					</DropdownMenuContent>
+				</DropdownMenu>
 			</Tooltip>
 
-			<Tooltip text="Toggle underline">
-				<ToggleGroupItem class="bg-card" value="underline" aria-label="Toggle underline">
-					<UnderlineIcon class="h-4 w-4" />
-				</ToggleGroupItem>
+			<Separator orientation="vertical" />
+
+			<ToggleGroup
+				variant="outline"
+				type="single"
+				value={activeAlignment}
+				onValueChange={setAlignment}
+			>
+				<Tooltip text="Align left">
+					<ToggleGroupItem class="bg-card" value="left" aria-label="Align left">
+						<AlignLeft class="h-4 w-4" />
+					</ToggleGroupItem>
+				</Tooltip>
+				<Tooltip text="Align center">
+					<ToggleGroupItem class="bg-card" value="center" aria-label="Align center">
+						<AlignCenter class="h-4 w-4" />
+					</ToggleGroupItem>
+				</Tooltip>
+				<Tooltip text="Align right">
+					<ToggleGroupItem class="bg-card" value="right" aria-label="Align right">
+						<AlignRight class="h-4 w-4" />
+					</ToggleGroupItem>
+				</Tooltip>
+			</ToggleGroup>
+
+			<Separator orientation="vertical" />
+
+			<ToggleGroup
+				type="multiple"
+				variant="outline"
+				onValueChange={handleTextStyleChange}
+				value={Object.entries(activeToggles)
+					.filter(([_, isActive]) => isActive)
+					.map(([style]) => style)}
+			>
+				<Tooltip text="Bold">
+					<ToggleGroupItem class="bg-card" value="bold" aria-label="Toggle bold">
+						<Bold class="h-4 w-4" />
+					</ToggleGroupItem>
+				</Tooltip>
+				<Tooltip text="Toggle italic">
+					<ToggleGroupItem class="bg-card" value="italic" aria-label="Toggle italic">
+						<Italic class="h-4 w-4" />
+					</ToggleGroupItem>
+				</Tooltip>
+
+				<Tooltip text="Toggle underline">
+					<ToggleGroupItem class="bg-card" value="underline" aria-label="Toggle underline">
+						<UnderlineIcon class="h-4 w-4" />
+					</ToggleGroupItem>
+				</Tooltip>
+
+				<Tooltip text="Toggle strikethrough">
+					<ToggleGroupItem class="bg-card" value="strike" aria-label="Toggle strikethrough">
+						<Strikethrough class="h-4 w-4" />
+					</ToggleGroupItem>
+				</Tooltip>
+			</ToggleGroup>
+
+			<Separator orientation="vertical" />
+
+			<ToggleGroup
+				type="single"
+				variant="outline"
+				onValueChange={(value) => handleListChange(value ? [value] : [])}
+				value={activeToggles.bulletList
+					? 'bullet'
+					: activeToggles.orderedList
+						? 'ordered'
+						: undefined}
+			>
+				<Tooltip text="Bullet list">
+					<ToggleGroupItem class="bg-card" value="bullet" aria-label="Bullet list">
+						<List class="h-4 w-4" />
+					</ToggleGroupItem>
+				</Tooltip>
+				<Tooltip text="Numbered list">
+					<ToggleGroupItem class="bg-card" value="ordered" aria-label="Numbered list">
+						<ListOrdered class="h-4 w-4" />
+					</ToggleGroupItem>
+				</Tooltip>
+			</ToggleGroup>
+
+			<Separator orientation="vertical" />
+
+			<Tooltip text="Insert link">
+				<Button variant="outline" on:click={openLinkDialog}>
+					<LinkIcon class="h-4 w-4" />
+				</Button>
 			</Tooltip>
 
-			<Tooltip text="Toggle strikethrough">
-				<ToggleGroupItem class="bg-card" value="strike" aria-label="Toggle strikethrough">
-					<Strikethrough class="h-4 w-4" />
-				</ToggleGroupItem>
+			<Tooltip text="Insert Image">
+				<Button variant="outline" on:click={insertImage}>
+					<ImageIcon class="h-4 w-4" />
+				</Button>
 			</Tooltip>
-		</ToggleGroup>
 
-		<Separator orientation="vertical" />
-
-		<ToggleGroup
-			type="single"
-			variant="outline"
-			onValueChange={(value) => handleListChange(value ? [value] : [])}
-			value={activeToggles.bulletList
-				? 'bullet'
-				: activeToggles.orderedList
-					? 'ordered'
-					: undefined}
-		>
-			<Tooltip text="Bullet list">
-				<ToggleGroupItem class="bg-card" value="bullet" aria-label="Bullet list">
-					<List class="h-4 w-4" />
-				</ToggleGroupItem>
+			<Tooltip text="Insert Table">
+				<Button variant="outline" on:click={insertTable}>
+					<TableIcon class="h-4 w-4" />
+				</Button>
 			</Tooltip>
-			<Tooltip text="Numbered list">
-				<ToggleGroupItem class="bg-card" value="ordered" aria-label="Numbered list">
-					<ListOrdered class="h-4 w-4" />
-				</ToggleGroupItem>
+
+			<Tooltip text="Insert Code">
+				<Button variant="outline" on:click={insertCode}>
+					<Code class="h-4 w-4" />
+				</Button>
 			</Tooltip>
-		</ToggleGroup>
 
-		<Separator orientation="vertical" />
-
-		<Tooltip text="Insert link">
-			<Button variant="outline" on:click={openLinkDialog}>
-				<LinkIcon class="h-4 w-4" />
-			</Button>
-		</Tooltip>
-
-		<Tooltip text="Insert Image">
-			<Button variant="outline" on:click={insertImage}>
-				<ImageIcon class="h-4 w-4" />
-			</Button>
-		</Tooltip>
-
-		<Tooltip text="Insert Table">
-			<Button variant="outline" on:click={insertTable}>
-				<TableIcon class="h-4 w-4" />
-			</Button>
-		</Tooltip>
-
-		<Tooltip text="Insert Code">
-			<Button variant="outline" on:click={insertCode}>
-				<Code class="h-4 w-4" />
-			</Button>
-		</Tooltip>
-
-		<Tooltip text="Toggle fullscreen">
-			<Button variant="outline" on:click={toggleFullscreen}>
-				<Maximize2 class="h-4 w-4" />
-			</Button>
-		</Tooltip>
+			<Tooltip text="Toggle fullscreen">
+				<Button variant="outline" on:click={toggleFullscreen}>
+					<Maximize2 class="h-4 w-4" />
+				</Button>
+			</Tooltip>
+		</div>
 	</div>
 
-	<div id="editor" class="prose max-w-none bg-card"></div>
+	<div id="editor"></div>
 </div>
 
 <Dialog bind:open={showLinkDialog}>
@@ -432,22 +466,70 @@
 	</DialogContent>
 </Dialog>
 
+<Dialog bind:open={showImageDialog}>
+	<DialogContent>
+		<DialogHeader>
+			<DialogTitle>Upload Image</DialogTitle>
+			<DialogDescription>Choose an image file to upload</DialogDescription>
+		</DialogHeader>
+		<div class="grid gap-4 py-4">
+			<div class="grid grid-cols-4 items-center gap-4">
+				<Label for="image-upload" class="text-right">Image</Label>
+				<Input
+					id="image-upload"
+					type="file"
+					accept="image/*"
+					on:change={handleImageUpload}
+					class="col-span-3"
+				/>
+			</div>
+		</div>
+	</DialogContent>
+</Dialog>
+
 <style>
 	:global(.ProseMirror) {
 		@apply border-[1px] border-dashed border-[muted] p-2;
+
+		/* & .column-resize-handle {
+			@apply absolute -right-1 top-0 h-full w-1 cursor-col-resize bg-red-800;
+		} */
+
+		& table {
+			@apply table-auto;
+
+			&:has(.column-resize-handle) {
+				@apply cursor-col-resize;
+			}
+
+			& th {
+				@apply relative border border-[card] bg-muted text-secondary-foreground;
+			}
+			& td {
+				@apply relative border border-[muted] bg-card text-secondary-foreground;
+			}
+
+			& td,
+			& th {
+				&:has(.column-resize-handle)::after {
+					@apply absolute -right-[1px] top-1/2 z-10 h-full w-[2px] -translate-y-1/2 transform bg-gray-300 content-[''];
+				}
+			}
+		}
 	}
 
 	:global(.fullscreen) {
-		@apply fixed inset-0 z-50 h-screen w-screen overflow-auto;
+		@apply fixed inset-0 z-50 !mt-0 h-screen w-screen overflow-auto;
 	}
 
-	:global(.fullscreen #editor) {
-		@apply h-[calc(100vh-4rem)];
-	}
+	/* :global(.fullscreen #editor) {
+		@apply h-full;
+	} */
 
 	:global(*[data-toggle-group-item][data-state='on']) {
 		@apply bg-primary text-primary-foreground;
 	}
+
 	:global(.active) {
 		@apply bg-primary text-primary-foreground;
 	}
