@@ -28,4 +28,5 @@
 	title="Collections"
 	description="All available collections"
 	{rowClickCallback}
+	listCollection={true}
 />

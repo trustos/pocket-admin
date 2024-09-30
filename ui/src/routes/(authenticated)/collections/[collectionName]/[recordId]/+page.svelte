@@ -41,12 +41,11 @@
 		dataType: 'json',
 		validators: dynamicSchema,
 		onUpdate: async ({ form }) => {
-			console.log(form);
 			if (form.valid) {
 				if (record) {
-					pb.collection(record.collectionName).update(record.id, form.data);
+					await pb.collection(record.collectionName).update(record.id, form.data);
 				} else {
-					pb.collection($page.params.collectionName).create(form.data);
+					await pb.collection($page.params.collectionName).create(form.data);
 				}
 				// try {
 				// 	await pb.collection('users').authWithPassword(form.data.email, form.data.password);

@@ -49,8 +49,9 @@
 	export let rowClickCallback: (event: Event, row: Collection) => void = () => {};
 	export let filterPlaceholder: string = '';
 	export let newRecordCallback: () => void = () => {};
+	export let listCollection = false;
 
-	const table = createTable(writable(data), {
+	const table = createTable(readable(data), {
 		page: addPagination(),
 		sort: addSortBy(),
 		filter: addTableFilter({
@@ -182,9 +183,10 @@
 		data = updatedItems;
 
 		resetSelectedRows();
+		$showDeleteAlert = false;
 	};
 
-	let showAlertDeleteAlert = false;
+	let showDeleteAlert = writable(false);
 
 	$: {
 		if (data) {
@@ -322,19 +324,19 @@
 	</Card.Content>
 </Card.Root>
 
-{#if $selectedDataIds && Object.keys($selectedDataIds).length > 0}
+{#if !listCollection && $selectedDataIds && Object.keys($selectedDataIds).length > 0}
 	<div
 		class="fixed bottom-32 left-52 right-0 z-20 m-auto w-[400px]"
 		transition:fly={{ delay: 10, duration: 250, x: 0, y: 300, opacity: 0.5, easing: quintOut }}
 	>
 		<DeleteRecord count={Object.keys($selectedDataIds).length} class="rounded-full shadow-2xl">
 			<Button variant="outline" on:click={() => resetSelectedRows()}>Reset</Button>
-			<Button variant="destructive" on:click={() => (showAlertDeleteAlert = true)}>Delete</Button>
+			<Button variant="destructive" on:click={() => ($showDeleteAlert = true)}>Delete</Button>
 		</DeleteRecord>
 	</div>
 {/if}
 
-<DeleteRecordAlert bind:open={showAlertDeleteAlert} confirmAction={confirmDelete} />
+<DeleteRecordAlert bind:open={$showDeleteAlert} confirmAction={confirmDelete} />
 
 <style>
 	:global([data-state='selected'] > td:has([role='checkbox'])),

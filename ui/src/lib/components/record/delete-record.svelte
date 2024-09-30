@@ -1,5 +1,4 @@
 <script lang="ts">
-	import Terminal from 'lucide-svelte/icons/terminal';
 	import * as Alert from '$lib/shadcn/components/ui/alert/';
 
 	export let count = 0;

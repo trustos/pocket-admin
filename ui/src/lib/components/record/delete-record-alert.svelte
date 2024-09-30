@@ -16,7 +16,7 @@
 			</AlertDialog.Description>
 		</AlertDialog.Header>
 		<AlertDialog.Footer>
-			<AlertDialog.Cancel>Cancel</AlertDialog.Cancel>
+			<AlertDialog.Cancel on:click={() => (open = false)}>Cancel</AlertDialog.Cancel>
 			<Button variant="destructive" on:click={() => confirmAction()}>Confirm</Button>
 		</AlertDialog.Footer>
 	</AlertDialog.Content>
