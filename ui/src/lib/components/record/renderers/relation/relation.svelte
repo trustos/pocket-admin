@@ -5,12 +5,12 @@
 
 	export let attrs: Record<string, unknown>;
 	export let value: string | string[];
-	export let record: RecordModel;
+	export let record: RecordModel | undefined;
 	export let options: SchemaField['options'];
 
 	let singleRelation = options?.maxSelect != null && options.maxSelect <= 1;
 
-	const getValue = (record: RecordModel, name: string) => {
+	const getValue = (record: RecordModel | undefined, name: string) => {
 		const result = record?.expand && (record?.expand[name as keyof RecordModel] as RecordModel);
 
 		if (!result) {

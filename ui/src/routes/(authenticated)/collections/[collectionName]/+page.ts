@@ -17,7 +17,7 @@ export const load: PageLoad = async ({ params, fetch, parent }) => {
 
 	const collection: ListResultCollection = await pb
 		.collection(params.collectionName)
-		.getList<Collection>(1, 20, { fetch, expand: findRelationFields.join(',') });
+		.getList<Collection>(1, 20, { fetch, expand: findRelationFields.join(','), sort: '-created' });
 
 	const schema: CollectionSchema = [
 		{ name: 'id', type: 'id' },

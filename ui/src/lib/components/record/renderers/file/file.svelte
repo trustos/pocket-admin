@@ -8,13 +8,19 @@
 
 	export let attrs: Record<string, unknown>;
 	export let value: string[] | string;
-	export let record: RecordModel;
+	export let record: RecordModel | undefined;
 	export let options: SchemaField['options'];
-	export let form: SuperForm<RecordModel, RecordModel>;
+	export let form: SuperForm<{ [x: string]: unknown }>;
+
+	let collectionId: string | undefined;
+	let id: string | undefined;
 
 	let singleFile = (options?.maxSelect ?? 1) <= 1;
 
-	const { collectionId, id } = record;
+	$: if (record) {
+		({ collectionId, id } = record);
+	}
+
 	const { form: formData } = form;
 
 	const inputHandler = async (event: FormInputEvent) => {
@@ -35,7 +41,7 @@
 	const allowedMimeTypes = options?.mimeTypes ?? [];
 </script>
 
-{#if collectionId && id && value.length}
+{#if collectionId && id && value.length && record}
 	<FilePreview {record} {value} {attrs} {formData} {singleFile} />
 {/if}
 <Input

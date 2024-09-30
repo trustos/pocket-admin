@@ -52,7 +52,7 @@
 	};
 
 	export let value: string[] | string;
-	export let formData: Writable<RecordModel>;
+	export let formData: Writable<{ [x: string]: unknown }>;
 	export let attrs: Record<string, unknown>;
 	export let record: RecordModel;
 	export let singleFile: boolean = false;
@@ -66,7 +66,7 @@
 
 		<Tooltip text={getFileName(value)}>
 			<figure
-				class="group/file hover:shadow-t-md relative flex h-[100px] w-[100px] cursor-pointer items-center justify-center overflow-hidden rounded-md border-[1px] border-gray-200 transition-all hover:translate-y-1 hover:border-gray-300"
+				class="group/file relative flex h-[100px] w-[100px] cursor-pointer items-center justify-center overflow-hidden rounded-md border-[1px] border-gray-200 transition-all hover:translate-y-1 hover:border-gray-300 hover:shadow-t-md"
 				data-fs-control
 			>
 				{#if isFile(value)}
@@ -101,7 +101,7 @@
 			{@const src = url(fileName)}
 			<Tooltip text={getFileName(fileName)}>
 				<figure
-					class="group/file hover:shadow-t-md relative flex h-[100px] w-[100px] cursor-pointer items-center justify-center overflow-hidden rounded-md border-[1px] border-gray-200 transition-all hover:translate-y-1 hover:border-gray-300"
+					class="group/file relative flex h-[100px] w-[100px] cursor-pointer items-center justify-center overflow-hidden rounded-md border-[1px] border-gray-200 transition-all hover:translate-y-1 hover:border-gray-300 hover:shadow-t-md"
 					data-fs-control
 				>
 					{#if isFile(fileName)}

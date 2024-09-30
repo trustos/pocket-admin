@@ -75,33 +75,37 @@
 		class={cn(
 			buttonVariants({ variant: 'outline' }),
 			'h-auto justify-between',
-			!value.length && 'text-muted-foreground',
+			!value?.length && 'text-muted-foreground',
 			singleOption && 'w-[200px]'
 		)}
 		role="combobox"
 		{...attrs}
 	>
-		{#if value.length === 0}
+		{#if value?.length === 0}
 			Select {singleOption ? 'option' : 'options'}
 		{:else if singleOption}
-			{value}
+			{value || 'Select option'}
 		{:else}
 			<div class="flex flex-wrap gap-1 overflow-hidden">
-				{#each value as option}
-					<Badge variant="secondary" class="mr-1">
-						{option}
-						<Button
-							variant="ghost"
-							class="ml-1 h-auto w-auto p-0"
-							on:click={(e) => {
-								e.stopPropagation();
-								removeOption(option);
-							}}
-						>
-							<X class="h-3 w-3" />
-						</Button>
-					</Badge>
-				{/each}
+				{#if !value}
+					Select options
+				{:else}
+					{#each value as option}
+						<Badge variant="secondary" class="mr-1">
+							{option}
+							<Button
+								variant="ghost"
+								class="ml-1 h-auto w-auto p-0"
+								on:click={(e) => {
+									e.stopPropagation();
+									removeOption(option);
+								}}
+							>
+								<X class="h-3 w-3" />
+							</Button>
+						</Badge>
+					{/each}
+				{/if}
 			</div>
 		{/if}
 		<ChevronsUpDown class="ml-2 h-4 w-4 shrink-0 opacity-50" />
@@ -118,7 +122,7 @@
 						<Check
 							class={cn(
 								'ml-auto h-4 w-4',
-								!(singleOption ? value === option : value.includes(option)) && 'text-transparent'
+								!(singleOption ? value === option : value?.includes(option)) && 'text-transparent'
 							)}
 						/>
 					</Command.Item>
@@ -137,7 +141,7 @@
 >
 	<Tooltip text="Clear options">
 		<Eraser
-			class={`transition-all ${value.length ? 'hover:animate-wiggle text-primary' : 'text-muted'}`}
+			class={`transition-all ${value?.length ? 'hover:animate-wiggle text-primary' : 'text-muted'}`}
 		/>
 	</Tooltip>
 </span>

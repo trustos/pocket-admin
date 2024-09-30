@@ -8,6 +8,7 @@
 	import pb from '$lib/pocketbase';
 	import { RecordField } from '$lib/components/record';
 	import { excludeRecordProperties } from '$lib/helpers';
+	import { page } from '$app/stores';
 
 	export let data: PageData;
 	export let className = '';
@@ -16,7 +17,7 @@
 
 	const { record, schema } = data;
 
-	import { superForm } from 'sveltekit-superforms';
+	import { superForm, defaults } from 'sveltekit-superforms';
 	import { zod } from 'sveltekit-superforms/adapters';
 
 	const dynamicSchema = zod(recordSchema(schema));
@@ -31,7 +32,9 @@
 		'expand'
 	];
 
-	const editableRecord = excludeRecordProperties(record, nonEditableFields);
+	const editableRecord = record
+		? excludeRecordProperties(record, nonEditableFields)
+		: defaults(dynamicSchema);
 
 	const form = superForm(editableRecord, {
 		SPA: true,
@@ -40,7 +43,11 @@
 		onUpdate: async ({ form }) => {
 			console.log(form);
 			if (form.valid) {
-				pb.collection(record.collectionName).update(record.id, form.data);
+				if (record) {
+					pb.collection(record.collectionName).update(record.id, form.data);
+				} else {
+					pb.collection($page.params.collectionName).create(form.data);
+				}
 				// try {
 				// 	await pb.collection('users').authWithPassword(form.data.email, form.data.password);
 				// 	//Set the user store
@@ -73,17 +80,20 @@
 				autofocus={false}
 				class={`space-y-4 overflow-auto pb-24 pt-5 ${className ? 'max-h-[85vh]' : ''}`}
 			>
-				<div class="text-left">
-					<span class="text-muted-foreground">
-						<svelte:component this={fieldIcons['id']} class="inline w-4" />
-						id
-					</span>
-					<div
-						class="mt-1 flex h-9 w-full rounded-md border border-input bg-muted px-3 py-2 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
-					>
-						{record.id}
+				{#if record?.id}
+					<div class="text-left">
+						<span class="text-muted-foreground">
+							<svelte:component this={fieldIcons['id']} class="inline w-4" />
+							id
+						</span>
+						<div
+							class="mt-1 flex h-9 w-full rounded-md border border-input bg-muted px-3 py-2 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+						>
+							{record?.id}
+						</div>
 					</div>
-				</div>
+				{/if}
+
 				{#each schema as entry}
 					<Form.Field {form} name={entry.name} class="text-left">
 						<Form.Control let:attrs>

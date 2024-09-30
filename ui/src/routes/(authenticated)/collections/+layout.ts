@@ -6,7 +6,7 @@ import type { Collection, CollectionSchema } from '$lib/types';
 export const load: LayoutLoad = async ({ fetch }) => {
 	const allCollections = await pb
 		.collection('admin_collections')
-		.getFullList<Collection>({ fetch });
+		.getFullList<Collection>({ fetch, sort: 'name' });
 
 	// Filter out base collections
 	const collections = allCollections.filter((c) => c.type === 'base');

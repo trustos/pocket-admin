@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { createTable, Render, Subscribe, createRender } from 'svelte-headless-table';
-	import { readable } from 'svelte/store';
+	import { readable, writable } from 'svelte/store';
+	import { createEventDispatcher } from 'svelte';
 	import {
 		DataTableActions,
 		DataTableHeader,
@@ -21,8 +22,13 @@
 	import { Button } from '$lib/shadcn/components/ui/button';
 	import ArrowUpDown from 'lucide-svelte/icons/arrow-up-down';
 	import ChevronDown from 'lucide-svelte/icons/chevron-down';
+	import Plus from 'lucide-svelte/icons/plus';
 	import { Input } from '$lib/shadcn/components/ui/input';
 	import * as DropdownMenu from '$lib/shadcn/components/ui/dropdown-menu';
+	import { DeleteRecord, DeleteRecordAlert } from '$lib/components/record';
+	import { fly } from 'svelte/transition';
+	import { quintOut } from 'svelte/easing';
+	import pb from '$lib/pocketbase';
 
 	const excludedColumns = [
 		'collectionId',
@@ -42,8 +48,9 @@
 	export let showHeaderIcons: boolean = true;
 	export let rowClickCallback: (event: Event, row: Collection) => void = () => {};
 	export let filterPlaceholder: string = '';
+	export let newRecordCallback: () => void = () => {};
 
-	const table = createTable(readable(data), {
+	const table = createTable(writable(data), {
 		page: addPagination(),
 		sort: addSortBy(),
 		filter: addTableFilter({
@@ -74,6 +81,8 @@
 			}
 		});
 	});
+
+	const dispatch = createEventDispatcher();
 
 	// Add checkbox column
 	cols.unshift(
@@ -137,6 +146,52 @@
 
 	const hidableCols = [...colsForHiding, 'id', 'created', 'updated'];
 
+	const getSelectedRows = (): Collection[] => {
+		const rowsIds = Object.keys($selectedDataIds);
+
+		if (rowsIds.length) {
+			return rowsIds.map((id) => $pageRows.find((row) => row.id === id)?.original);
+		}
+
+		return [];
+	};
+
+	const resetSelectedRows = () => {
+		$selectedDataIds = {};
+	};
+
+	const confirmDelete = async () => {
+		const rows = getSelectedRows();
+
+		// Create a new array for items to trigger reactivity
+		let updatedItems = [...data];
+
+		for (const row of rows) {
+			try {
+				// Delete the record from Pocketbase
+				await pb.collection(row.collectionName).delete(row.id);
+
+				// Remove the deleted item from the updatedItems array
+				updatedItems = updatedItems.filter((item) => item.id !== row.id);
+			} catch (error) {
+				console.error(`Failed to delete record ${row.id}:`, error);
+			}
+		}
+
+		// Update the data prop to trigger reactivity
+		data = updatedItems;
+
+		resetSelectedRows();
+	};
+
+	let showAlertDeleteAlert = false;
+
+	$: {
+		if (data) {
+			dispatch('dataUpdate', data);
+		}
+	}
+
 	$: $hiddenColumnIds = Object.entries(hideForId)
 		.filter(([, hide]) => !hide)
 		.map(([id]) => id);
@@ -149,7 +204,10 @@
 			<Card.Description>{description}</Card.Description>
 		</div>
 		<div class="text-center">
-			<Button class="mt-6 self-end sm:mt-0" variant="default">Add new record</Button>
+			<Button class="mt-6 self-end sm:mt-0" variant="default" on:click={() => newRecordCallback()}>
+				<Plus class="mr-2 h-4 w-4" />
+				New record</Button
+			>
 		</div>
 	</Card.Header>
 	<Card.Content>
@@ -263,6 +321,20 @@
 		</div>
 	</Card.Content>
 </Card.Root>
+
+{#if $selectedDataIds && Object.keys($selectedDataIds).length > 0}
+	<div
+		class="fixed bottom-32 left-52 right-0 z-20 m-auto w-[400px]"
+		transition:fly={{ delay: 10, duration: 250, x: 0, y: 300, opacity: 0.5, easing: quintOut }}
+	>
+		<DeleteRecord count={Object.keys($selectedDataIds).length} class="rounded-full shadow-2xl">
+			<Button variant="outline" on:click={() => resetSelectedRows()}>Reset</Button>
+			<Button variant="destructive" on:click={() => (showAlertDeleteAlert = true)}>Delete</Button>
+		</DeleteRecord>
+	</div>
+{/if}
+
+<DeleteRecordAlert bind:open={showAlertDeleteAlert} confirmAction={confirmDelete} />
 
 <style>
 	:global([data-state='selected'] > td:has([role='checkbox'])),

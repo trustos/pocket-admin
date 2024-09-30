@@ -12,9 +12,13 @@ export const load: PageLoad = async ({ params, parent, fetch }) => {
 			?.filter((c: Partial<RecordModel>) => c.type === 'relation')
 			.map((c: Partial<RecordModel>) => c.name) || [];
 
-	const record = await pb
-		.collection(params.collectionName)
-		.getOne(params.recordId, { fetch, expand: findRelationFields.join(',') });
+	let record: RecordModel | undefined;
+
+	if (params.recordId !== 'newRecord') {
+		record = await pb
+			.collection(params.collectionName)
+			.getOne(params.recordId, { fetch, expand: findRelationFields.join(',') });
+	}
 
 	return {
 		record,

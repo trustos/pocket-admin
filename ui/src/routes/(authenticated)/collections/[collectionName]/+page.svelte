@@ -12,6 +12,27 @@
 	$: ({ collection, schema, title } = data);
 	$: items = collection.items;
 
+	const handleDataUpdate = (data: Collection[]) => {
+		collection = { ...collection, items: data };
+	};
+
+	const onAddNewRecordClick = async () => {
+		const recordHref = `${$page.url.pathname}${`newRecord`}`;
+
+		//Prelaod the data for the record page
+		const result = await preloadData(recordHref);
+
+		if (result.type === 'loaded' && result.status === 200) {
+			//Remove unserilizable data from the result
+			delete result.data?.menu;
+
+			pushState(recordHref, { recordPageData: result.data });
+		} else {
+			// something bad happened! try navigating
+			goto(recordHref);
+		}
+	};
+
 	const onRecordRowClick = async (event: Event, row: Collection) => {
 		const isCellContent =
 			(event.target as HTMLElement)!.nodeName !== 'TD' ||
@@ -51,14 +72,16 @@
 	};
 </script>
 
-{#key schema}
+{#key collection}
 	<DataTable
 		filterPlaceholder={'Filter records'}
+		on:dataUpdate={({ detail }) => handleDataUpdate(detail)}
 		{title}
 		{schema}
 		data={items}
 		description={`All available records for ${title}`}
 		rowClickCallback={onRecordRowClick}
+		newRecordCallback={onAddNewRecordClick}
 	/>
 
 	<Drawer.Root
