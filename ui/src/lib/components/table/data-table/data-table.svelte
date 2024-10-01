@@ -22,7 +22,6 @@
 	import { Button } from '$lib/shadcn/components/ui/button';
 	import ArrowUpDown from 'lucide-svelte/icons/arrow-up-down';
 	import ChevronDown from 'lucide-svelte/icons/chevron-down';
-	import Plus from 'lucide-svelte/icons/plus';
 	import { Input } from '$lib/shadcn/components/ui/input';
 	import * as DropdownMenu from '$lib/shadcn/components/ui/dropdown-menu';
 	import { DeleteRecord, DeleteRecordAlert } from '$lib/components/record';
@@ -48,7 +47,6 @@
 	export let showHeaderIcons: boolean = true;
 	export let rowClickCallback: (event: Event, row: Collection) => void = () => {};
 	export let filterPlaceholder: string = '';
-	export let newRecordCallback: () => void = () => {};
 	export let listCollection = false;
 
 	const table = createTable(readable(data), {
@@ -85,35 +83,37 @@
 
 	const dispatch = createEventDispatcher();
 
-	// Add checkbox column
-	cols.unshift(
-		table.column({
-			accessor: ({ id }) => id,
-			header: (_, { pluginStates }) => {
-				const { allPageRowsSelected } = pluginStates.select;
-				return createRender(DataTableCheckbox, {
-					checked: allPageRowsSelected
-				});
-			},
-			cell: ({ row }, { pluginStates }) => {
-				const { getRowState } = pluginStates.select;
-				const { isSelected } = getRowState(row);
-
-				return createRender(DataTableCheckbox, {
-					checked: isSelected,
-					class: 'sticky left-0 z-20 bg-white dark:bg-gray-800'
-				});
-			},
-			plugins: {
-				sort: {
-					disable: true
+	// Add checkbox column if is not a collecition
+	if (!listCollection) {
+		cols.unshift(
+			table.column({
+				accessor: ({ id }) => id,
+				header: (_, { pluginStates }) => {
+					const { allPageRowsSelected } = pluginStates.select;
+					return createRender(DataTableCheckbox, {
+						checked: allPageRowsSelected
+					});
 				},
-				filter: {
-					exclude: true
+				cell: ({ row }, { pluginStates }) => {
+					const { getRowState } = pluginStates.select;
+					const { isSelected } = getRowState(row);
+
+					return createRender(DataTableCheckbox, {
+						checked: isSelected,
+						class: 'sticky left-0 z-20 bg-white dark:bg-gray-800'
+					});
+				},
+				plugins: {
+					sort: {
+						disable: true
+					},
+					filter: {
+						exclude: true
+					}
 				}
-			}
-		})
-	);
+			})
+		);
+	}
 
 	cols.push(
 		table.column({
@@ -151,7 +151,13 @@
 		const rowsIds = Object.keys($selectedDataIds);
 
 		if (rowsIds.length) {
-			return rowsIds.map((id) => $pageRows.find((row) => row.id === id)?.original);
+			return rowsIds
+				.map(
+					(id) =>
+						($pageRows.find((row) => row.id === id) as unknown as { original: Collection })
+							?.original
+				)
+				.filter((row): row is Collection => row !== undefined);
 		}
 
 		return [];
@@ -182,8 +188,8 @@
 		// Update the data prop to trigger reactivity
 		data = updatedItems;
 
-		resetSelectedRows();
 		$showDeleteAlert = false;
+		resetSelectedRows();
 	};
 
 	let showDeleteAlert = writable(false);
@@ -206,10 +212,7 @@
 			<Card.Description>{description}</Card.Description>
 		</div>
 		<div class="text-center">
-			<Button class="mt-6 self-end sm:mt-0" variant="default" on:click={() => newRecordCallback()}>
-				<Plus class="mr-2 h-4 w-4" />
-				New record</Button
-			>
+			<slot name="action"></slot>
 		</div>
 	</Card.Header>
 	<Card.Content>

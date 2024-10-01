@@ -6,6 +6,8 @@
 	import { pushState, preloadData, goto } from '$app/navigation';
 	import { page } from '$app/stores';
 	import * as Drawer from '$lib/shadcn/components/ui/drawer';
+	import { Button } from '$lib/shadcn/components/ui/button';
+	import Plus from 'lucide-svelte/icons/plus';
 
 	export let data: PageData;
 
@@ -81,8 +83,17 @@
 		data={items}
 		description={`All available records for ${title}`}
 		rowClickCallback={onRecordRowClick}
-		newRecordCallback={onAddNewRecordClick}
-	/>
+	>
+		<Button
+			slot="action"
+			class="mt-6 self-end sm:mt-0"
+			variant="default"
+			on:click={() => onAddNewRecordClick()}
+		>
+			<Plus class="mr-2 h-4 w-4" />
+			New record
+		</Button>
+	</DataTable>
 
 	<Drawer.Root
 		shouldScaleBackground

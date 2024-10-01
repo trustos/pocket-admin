@@ -54,7 +54,7 @@
 	export let value: string[] | string;
 	export let formData: Writable<{ [x: string]: unknown }>;
 	export let attrs: Record<string, unknown>;
-	export let record: RecordModel;
+	export let record: RecordModel | undefined = undefined;
 	export let singleFile: boolean = false;
 </script>
 

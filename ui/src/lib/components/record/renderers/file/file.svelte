@@ -27,11 +27,19 @@
 		const newImage = Array.from(event.currentTarget.files ?? []);
 
 		const formDataKey = attrs['name'] as keyof typeof $formData;
+
 		if (singleFile) {
 			$formData[formDataKey] = newImage;
 		} else {
 			if (formDataKey in $formData) {
-				$formData[formDataKey] = [...($formData[formDataKey] as Array<string | File>), ...newImage];
+				if ($formData[formDataKey] as Array<string | File>) {
+					$formData[formDataKey] = [
+						...($formData[formDataKey] as Array<string | File>),
+						...newImage
+					];
+				} else {
+					$formData[formDataKey] = newImage;
+				}
 			} else {
 				console.error(`Key ${String(formDataKey)} not found in formData`);
 			}
@@ -41,7 +49,7 @@
 	const allowedMimeTypes = options?.mimeTypes ?? [];
 </script>
 
-{#if collectionId && id && value.length && record}
+{#if value}
 	<FilePreview {record} {value} {attrs} {formData} {singleFile} />
 {/if}
 <Input
