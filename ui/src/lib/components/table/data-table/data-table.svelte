@@ -25,9 +25,11 @@
 	import { Input } from '$lib/shadcn/components/ui/input';
 	import * as DropdownMenu from '$lib/shadcn/components/ui/dropdown-menu';
 	import { DeleteRecord, DeleteRecordAlert } from '$lib/components/record';
+	import { toast } from 'svelte-sonner';
 	import { fly } from 'svelte/transition';
 	import { quintOut } from 'svelte/easing';
 	import pb from '$lib/pocketbase';
+	import { Trash2 } from 'lucide-svelte';
 
 	const excludedColumns = [
 		'collectionId',
@@ -180,6 +182,13 @@
 
 				// Remove the deleted item from the updatedItems array
 				updatedItems = updatedItems.filter((item) => item.id !== row.id);
+
+				toast.warning(`Record ${row.id} deleted`, {
+					class:
+						'bg-orange-400 text-white border border-orange-500 rounded-lg px-4 py-3 shadow-lg font-bold',
+					icon: Trash2,
+					duration: 3000
+				});
 			} catch (error) {
 				console.error(`Failed to delete record ${row.id}:`, error);
 			}
@@ -329,7 +338,7 @@
 
 {#if !listCollection && $selectedDataIds && Object.keys($selectedDataIds).length > 0}
 	<div
-		class="fixed bottom-32 left-52 right-0 z-20 m-auto w-[400px]"
+		class="fixed bottom-32 left-0 right-0 z-20 m-auto w-[400px] lg:left-52"
 		transition:fly={{ delay: 10, duration: 250, x: 0, y: 300, opacity: 0.5, easing: quintOut }}
 	>
 		<DeleteRecord count={Object.keys($selectedDataIds).length} class="rounded-full shadow-2xl">

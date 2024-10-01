@@ -8,6 +8,8 @@
 	import { Breadcrumbs } from '$lib/components/breadcrumbs';
 	import { Nav, NavMobile } from '$lib/components/nav';
 	import { Account } from '$lib/components/account';
+	import { Toaster } from '$lib/shadcn/components/ui/sonner';
+	import { ModeWatcher } from 'mode-watcher';
 
 	export let data: LayoutData;
 
@@ -20,7 +22,7 @@
 	}
 </script>
 
-<div class="flex min-h-screen w-full flex-col bg-gray-50" data-vaul-drawer-wrapper>
+<div class="flex min-h-screen w-full flex-col bg-card" data-vaul-drawer-wrapper>
 	{#if $user}
 		<aside class="fixed inset-y-0 left-0 z-10 hidden w-14 flex-col border-r bg-background sm:flex">
 			<Nav menu={data.menu} />
@@ -43,3 +45,13 @@
 		<slot></slot>
 	{/if}
 </div>
+
+<Toaster
+	theme="light"
+	position="top-center"
+	translate="yes"
+	toastOptions={{
+		duration: 3000
+	}}
+/>
+<ModeWatcher track={true} defaultMode="light" />

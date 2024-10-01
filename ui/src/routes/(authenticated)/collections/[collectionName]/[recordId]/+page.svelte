@@ -3,6 +3,7 @@
 	import type { PageData } from './$types';
 	import { cn } from '$lib/shadcn/utils';
 	import * as Form from '$lib/shadcn/components/ui/form';
+	import { toast } from 'svelte-sonner';
 	import { recordSchema } from '$lib/schemas';
 	import { fieldIcons } from '$lib/types';
 	import pb from '$lib/pocketbase';
@@ -13,12 +14,20 @@
 	export let data: PageData;
 	export let className = '';
 	export let destroyCallback = () => {};
+	export let cancelCallback: (() => void) | undefined = undefined;
 	export { className as class };
 
 	const { record, schema } = data;
 
 	import { superForm, defaults } from 'sveltekit-superforms';
 	import { zod } from 'sveltekit-superforms/adapters';
+	import Button from '$lib/shadcn/components/ui/button/button.svelte';
+	import { goto } from '$app/navigation';
+	import { CheckCircle } from 'lucide-svelte';
+
+	const goPreviousPath = () => {
+		goto(`/admin/collections/${$page.params.collectionName}`);
+	};
 
 	const dynamicSchema = zod(recordSchema(schema));
 
@@ -41,18 +50,28 @@
 		dataType: 'json',
 		validators: dynamicSchema,
 		onUpdate: async ({ form }) => {
-			if (form.valid) {
-				if (record) {
-					await pb.collection(record.collectionName).update(record.id, form.data);
-				} else {
-					await pb.collection($page.params.collectionName).create(form.data);
+			try {
+				if (form.valid) {
+					if (record) {
+						await pb.collection(record.collectionName).update(record.id, form.data);
+					} else {
+						await pb.collection($page.params.collectionName).create(form.data);
+					}
 				}
-				// try {
-				// 	await pb.collection('users').authWithPassword(form.data.email, form.data.password);
-				// 	//Set the user store
-				// } catch {
-				// 	setMessage(form, 'Failed to authenticate.');
-				// }
+
+				toast.success(
+					`${!record ? 'Record created successfully!' : 'Record updated successfully'}`,
+					{
+						class:
+							'bg-green-500 text-white border border-green-700 rounded-lg shadow-lg font-semibold',
+						icon: CheckCircle,
+						duration: 3000
+					}
+				);
+			} catch (error) {
+				toast.error(`An error occurred while saving the record: ${JSON.stringify(error)}`, {
+					class: 'bg-red-400 text-white'
+				});
 			}
 		},
 		onResult: ({ result }) => {
@@ -64,7 +83,11 @@
 
 	const { form: formData, message, enhance } = form;
 
-	// console.log(schema);
+	// Initial form data
+	const initialFormData = JSON.parse(JSON.stringify({ ...$formData }));
+
+	// Compute for state changes
+	$: hasDiff = JSON.stringify(initialFormData) !== JSON.stringify($formData);
 </script>
 
 <main
@@ -77,7 +100,7 @@
 		<Card.Root class="relative mx-auto w-full">
 			<Card.Content
 				autofocus={false}
-				class={`space-y-4 overflow-auto pb-24 pt-5 ${className ? 'max-h-[85vh]' : ''}`}
+				class={`relative space-y-4 overflow-auto pb-0 pt-5 ${className ? 'max-h-[80vh]' : ''}`}
 			>
 				{#if record?.id}
 					<div class="text-left">
@@ -118,12 +141,20 @@
 						<Form.FieldErrors />
 					</Form.Field>
 				{/each}
+
+				<div
+					class={`sticky -bottom-[1px] flex flex-row justify-center gap-4 border-t-2 bg-card pb-2 pt-2 ${className ? '' : ''}`}
+				>
+					{#if cancelCallback}
+						<Button on:click={() => cancelCallback()} variant="secondary" class="w-52"
+							>Cancel</Button
+						>
+					{:else}
+						<Button on:click={() => goPreviousPath()} variant="secondary" class="w-52">Back</Button>
+					{/if}
+					<Form.Button class="w-52" disabled={!hasDiff}>Save</Form.Button>
+				</div>
 			</Card.Content>
-			<Card.Footer
-				class={`absolute bottom-0 w-full rounded-b-lg bg-card pb-4 pt-4 ${className ? 'shadow-top' : ''}`}
-			>
-				<Form.Button class="w-full">Save</Form.Button>
-			</Card.Footer>
 		</Card.Root>
 	</form>
 </main>

@@ -111,6 +111,7 @@
 				destroyCallback={onRecordClose}
 				class="mt-[15px] h-full pt-5"
 				data={{ ...JSON.parse(JSON.stringify($page.state.recordPageData)) }}
+				cancelCallback={onRecordClose}
 			/>
 		</Drawer.Content>
 	</Drawer.Root>
