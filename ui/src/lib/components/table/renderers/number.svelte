@@ -1,5 +1,11 @@
 <script lang="ts">
-	export let value: number;
+	import { NotAvailable, CommonRenderer } from '$lib/components/table/renderers';
+
+	export let value: string;
 </script>
 
-<span>{value.toString()}</span>
+{#if value !== null && value !== undefined && value !== ''}
+	<CommonRenderer {value} />
+{:else}
+	<NotAvailable />
+{/if}

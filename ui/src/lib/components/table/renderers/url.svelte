@@ -1,12 +1,11 @@
 <script lang="ts">
-	import Common from './common.svelte';
-	import { NotAvailable } from '$lib/components/table/renderers';
+	import { NotAvailable, CommonRenderer } from '$lib/components/table/renderers';
 
 	export let value: string;
 </script>
 
 {#if value}
-	<Common {value} />
+	<CommonRenderer {value} />
 {:else}
 	<NotAvailable />
 {/if}

@@ -1,6 +1,5 @@
 <script lang="ts">
-	import Common from './common.svelte';
-	import { NotAvailable } from '$lib/components/table/renderers';
+	import { NotAvailable, CommonRenderer } from '$lib/components/table/renderers';
 
 	const isJsonString = (str: string) => {
 		try {
@@ -18,7 +17,7 @@
 	{#if isJsonString(value)}
 		{JSON.stringify(value)}
 	{:else}
-		<Common {value} />
+		<CommonRenderer {value} />
 	{/if}
 {:else}
 	<NotAvailable />

@@ -58,7 +58,7 @@
 	<BoolRenderer {value} />
 {:else if type === 'date' && isString(value)}
 	<DateRenderer {value} />
-{:else if type === 'select' && isString(value)}
+{:else if type === 'select' && (isString(value) || isStringArray(value))}
 	<SelectRenderer {value} />
 {:else if type === 'relation' && (isString(value) || isStringArray(value))}
 	<RelationRenderer {value} {record} fieldName={name} />

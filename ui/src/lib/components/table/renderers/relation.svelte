@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { Badge } from '$lib/shadcn/components/ui/badge';
-	import NotAvailable from './notAvailable.svelte';
+	import { NotAvailable } from '$lib/components/table/renderers';
 	import type { Collection } from '$lib/types';
 	import type { RecordModel } from 'pocketbase';
 	import Info from 'lucide-svelte/icons/info';

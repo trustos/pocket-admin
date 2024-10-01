@@ -1,8 +1,7 @@
 <script lang="ts">
-	import NotAvailable from '$lib/components/table/renderers/notAvailable.svelte';
+	import { NotAvailable, CommonRenderer } from '$lib/components/table/renderers';
 	import * as Tooltip from '$lib/shadcn/components/ui/tooltip';
 	import EditorPreview from '$lib/components/table/renderers/editor-preview.svelte';
-	import Common from './common.svelte';
 
 	export let value: string;
 
@@ -43,7 +42,7 @@
 	<Tooltip.Root openDelay={500}>
 		<Tooltip.Trigger asChild let:builder class="text-left">
 			<span {...builder} use:builder.action>
-				<Common value={preview} />
+				<CommonRenderer value={preview} />
 			</span>
 		</Tooltip.Trigger>
 		<Tooltip.Content side="top" class="overflow-auto border-2 bg-card">

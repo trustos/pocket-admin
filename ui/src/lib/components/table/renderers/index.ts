@@ -1,3 +1,4 @@
+export { default as CommonRenderer } from './common.svelte';
 export { default as EditorRenderer } from './editor.svelte';
 export { default as EmailRenderer } from './email.svelte';
 export { default as TextRenderer } from './text.svelte';
@@ -10,4 +11,4 @@ export { default as SelectRenderer } from './select.svelte';
 export { default as RelationRenderer } from './relation.svelte';
 export { default as JsonRenderer } from './json.svelte';
 export { default as IdRenderer } from './id.svelte';
-export { default as NotAvailable } from './notAvailable.svelte';
+export { default as NotAvailable } from './not-available.svelte';
