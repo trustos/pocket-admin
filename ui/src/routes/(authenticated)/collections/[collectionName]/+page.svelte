@@ -8,14 +8,50 @@
 	import * as Drawer from '$lib/shadcn/components/ui/drawer';
 	import { Button } from '$lib/shadcn/components/ui/button';
 	import Plus from 'lucide-svelte/icons/plus';
+	import pb from '$lib/pocketbase';
 
 	export let data: PageData;
 
-	$: ({ collection, schema, title } = data);
+	$: ({ collection, schema, title, pagination, relationsToExpand } = data);
 	$: items = collection.items;
+
+	$: {
+		if (collection) {
+			items = collection.items;
+		}
+	}
 
 	const handleDataUpdate = (data: Collection[]) => {
 		collection = { ...collection, items: data };
+	};
+
+	const fetchPage = async (pageNum: number) => {
+		const newCollection = await pb
+			.collection(title!)
+			.getList<Collection>(pageNum, pagination.perPage, {
+				expand: relationsToExpand,
+				sort: '-created'
+			});
+
+		collection = newCollection;
+		items = newCollection.items;
+		pagination = {
+			...pagination,
+			page: pageNum,
+			totalPages: Math.ceil(newCollection.totalItems / pagination.perPage),
+			totalItems: newCollection.totalItems
+		};
+	};
+
+	const onPageChange = async (newPage: number) => {
+		console.log('Page change requested:', newPage);
+		await fetchPage(newPage);
+		const url = new URL(window.location.href);
+		url.searchParams.set('page', newPage.toString());
+		pushState(url.toString(), {});
+
+		// Force a re-render of the DataTable
+		collection = { ...collection };
 	};
 
 	const onAddNewRecordClick = async () => {
@@ -68,7 +104,7 @@
 	const onRecordClose = () => {
 		if (pageDataAvailable) {
 			setTimeout(() => {
-				history.back();
+				window.history.back();
 			}, 200);
 		}
 	};
@@ -83,6 +119,8 @@
 		data={items}
 		description={`All available records for ${title}`}
 		rowClickCallback={onRecordRowClick}
+		{pagination}
+		{onPageChange}
 	>
 		<Button
 			slot="action"

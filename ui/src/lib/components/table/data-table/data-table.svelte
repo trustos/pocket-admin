@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { createTable, Render, Subscribe, createRender } from 'svelte-headless-table';
-	import { readable, writable } from 'svelte/store';
+	import { writable } from 'svelte/store';
 	import { createEventDispatcher } from 'svelte';
 	import {
 		DataTableActions,
@@ -16,12 +16,9 @@
 		addHiddenColumns,
 		addSelectedRows
 	} from 'svelte-headless-table/plugins';
-
 	import * as Card from '$lib/shadcn/components/ui/card';
 	import * as Table from '$lib/shadcn/components/ui/table';
 	import { Button } from '$lib/shadcn/components/ui/button';
-	import ArrowUpDown from 'lucide-svelte/icons/arrow-up-down';
-	import ChevronDown from 'lucide-svelte/icons/chevron-down';
 	import { Input } from '$lib/shadcn/components/ui/input';
 	import * as DropdownMenu from '$lib/shadcn/components/ui/dropdown-menu';
 	import { DeleteRecord, DeleteRecordAlert } from '$lib/components/record';
@@ -29,9 +26,31 @@
 	import { fly } from 'svelte/transition';
 	import { quintOut } from 'svelte/easing';
 	import pb from '$lib/pocketbase';
+	import ArrowUpDown from 'lucide-svelte/icons/arrow-up-down';
+	import ChevronDown from 'lucide-svelte/icons/chevron-down';
 	import { Trash2 } from 'lucide-svelte';
 
-	const excludedColumns = [
+	// Props
+	export let data: Collection[] = [];
+	export let schema: CollectionSchema = [];
+	export let title: string = '';
+	export let description: string = '';
+	export let showHeaderIcons: boolean = true;
+	export let rowClickCallback: (event: Event, row: Collection) => void = () => {};
+	export let filterPlaceholder: string = '';
+	export let listCollection = false;
+	export let pagination:
+		| {
+				page: number;
+				perPage: number;
+				totalPages: number;
+				totalItems: number;
+		  }
+		| undefined = undefined;
+	export let onPageChange: ((page: number) => void) | undefined = undefined;
+
+	// Constants
+	const EXCLUDED_COLUMNS = [
 		'collectionId',
 		'collectionName',
 		'schema',
@@ -42,147 +61,127 @@
 		'deleteRule'
 	];
 
-	export let data: Collection[] = [];
-	export let schema: CollectionSchema = [];
-	export let title: string = '';
-	export let description: string = '';
-	export let showHeaderIcons: boolean = true;
-	export let rowClickCallback: (event: Event, row: Collection) => void = () => {};
-	export let filterPlaceholder: string = '';
-	export let listCollection = false;
+	// Stores
+	const dataStore = writable(data);
+	const pageSize = writable(pagination?.perPage ?? 1000000);
+	const pageIndex = writable(pagination?.page ? pagination.page - 1 : 0);
+	let showDeleteAlert = writable(false);
 
-	const table = createTable(readable(data), {
-		page: addPagination(),
+	// Reactive statements
+	$: dataStore.set(data);
+	$: updatePagination(pagination);
+	$: if (pluginStates.page) {
+		pluginStates.page.pageSize.set(pagination?.perPage ?? 10);
+		pluginStates.page.pageIndex.set((pagination?.page ?? 1) - 1);
+	}
+
+	// Functions
+	function updatePagination(pag: typeof pagination) {
+		if (pag) {
+			pageSize.set(pag.perPage);
+			pageIndex.set(pag.page - 1);
+		} else {
+			pageSize.set(1000000);
+			pageIndex.set(0);
+		}
+	}
+
+	// Table setup
+	const tablePlugins = {
 		sort: addSortBy(),
 		filter: addTableFilter({
 			fn: ({ filterValue, value }) => value.toLowerCase().includes(filterValue.toLowerCase())
 		}),
 		hide: addHiddenColumns(),
-		select: addSelectedRows()
-	});
+		select: addSelectedRows(),
+		...(pagination
+			? {
+					page: addPagination({
+						initialPageSize: pagination.perPage,
+						initialPageIndex: pagination.page - 1
+					})
+				}
+			: {})
+	};
+
+	const table = createTable(dataStore, tablePlugins);
 
 	const colKeys = schema
 		.map((s) => ({ name: s.name, type: s.type }))
-		.filter((s) => !excludedColumns.includes(s.name));
+		.filter((s) => !EXCLUDED_COLUMNS.includes(s.name));
 
-	const cols = colKeys.map(({ name, type }) => {
-		return table.column({
-			accessor: name,
-			header: () => {
-				return createRender(DataTableHeader, { name, type, showIcons: showHeaderIcons });
-			},
-			cell: ({ value, row }) => {
-				//@ts-expect-error - This is a hack to get the row data
-				return createRender(DataTableCell, { name, type, value, record: row.original });
-			},
-			plugins: {
-				sort: {
-					disable: name === 'id'
-				}
-			}
-		});
-	});
-
-	const dispatch = createEventDispatcher();
-
-	// Add checkbox column if is not a collecition
-	if (!listCollection) {
-		cols.unshift(
+	const cols = [
+		...(!listCollection
+			? [
+					table.column({
+						id: 'select',
+						accessor: 'id',
+						header: (_, { pluginStates }) =>
+							createRender(DataTableCheckbox, { checked: pluginStates.select.allPageRowsSelected }),
+						cell: ({ row }, { pluginStates }) =>
+							createRender(DataTableCheckbox, {
+								checked: pluginStates.select.getRowState(row).isSelected,
+								class: 'sticky left-0 z-20 bg-white dark:bg-gray-800'
+							}),
+						plugins: { sort: { disable: true }, filter: { exclude: true } }
+					})
+				]
+			: []),
+		...colKeys.map(({ name, type }) =>
 			table.column({
-				accessor: ({ id }) => id,
-				header: (_, { pluginStates }) => {
-					const { allPageRowsSelected } = pluginStates.select;
-					return createRender(DataTableCheckbox, {
-						checked: allPageRowsSelected
-					});
-				},
-				cell: ({ row }, { pluginStates }) => {
-					const { getRowState } = pluginStates.select;
-					const { isSelected } = getRowState(row);
-
-					return createRender(DataTableCheckbox, {
-						checked: isSelected,
-						class: 'sticky left-0 z-20 bg-white dark:bg-gray-800'
-					});
-				},
-				plugins: {
-					sort: {
-						disable: true
-					},
-					filter: {
-						exclude: true
-					}
-				}
+				id: name,
+				accessor: name,
+				header: () => createRender(DataTableHeader, { name, type, showIcons: showHeaderIcons }),
+				cell: ({ value, row }: { value: any; row: { original: Collection } }) =>
+					createRender(DataTableCell, { name, type, value, record: row.original }),
+				plugins: { sort: { disable: name === 'id' } }
 			})
-		);
-	}
-
-	cols.push(
+		),
 		table.column({
-			accessor: ({ id }: { id: string }) => id,
+			id: 'actions',
+			accessor: 'id',
 			header: '',
-			cell: ({ value }: { value: string }) => {
-				return createRender(DataTableActions, { id: value });
-			},
-			plugins: {
-				sort: {
-					disable: true
-				}
-			}
+			cell: ({ value }: { value: string }) => createRender(DataTableActions, { id: value }),
+			plugins: { sort: { disable: true } }
 		})
-	);
+	];
 
 	const columns = table.createColumns(cols);
-
 	const { headerRows, pageRows, tableAttrs, tableBodyAttrs, pluginStates, flatColumns, rows } =
 		table.createViewModel(columns);
 
-	const { hasNextPage, hasPreviousPage, pageIndex } = pluginStates.page;
 	const { filterValue } = pluginStates.filter;
 	const { hiddenColumnIds } = pluginStates.hide;
 	const { selectedDataIds } = pluginStates.select;
 
-	const ids = flatColumns.map((col) => col.id);
-	let hideForId = Object.fromEntries(ids.map((id) => [id, true]));
+	// Event handling
+	const dispatch = createEventDispatcher();
 
-	const colsForHiding = colKeys.map(({ name }) => name);
-
-	const hidableCols = [...colsForHiding, 'id', 'created', 'updated'];
-
-	const getSelectedRows = (): Collection[] => {
+	function getSelectedRows(): Collection[] {
 		const rowsIds = Object.keys($selectedDataIds);
+		return rowsIds.length
+			? rowsIds
+					.map(
+						(id) =>
+							($pageRows.find((row) => row.id === id) as unknown as { original: Collection })
+								?.original
+					)
+					.filter((row): row is Collection => row !== undefined)
+			: [];
+	}
 
-		if (rowsIds.length) {
-			return rowsIds
-				.map(
-					(id) =>
-						($pageRows.find((row) => row.id === id) as unknown as { original: Collection })
-							?.original
-				)
-				.filter((row): row is Collection => row !== undefined);
-		}
-
-		return [];
-	};
-
-	const resetSelectedRows = () => {
+	function resetSelectedRows() {
 		$selectedDataIds = {};
-	};
+	}
 
-	const confirmDelete = async () => {
+	async function confirmDelete() {
 		const rows = getSelectedRows();
-
-		// Create a new array for items to trigger reactivity
 		let updatedItems = [...data];
 
 		for (const row of rows) {
 			try {
-				// Delete the record from Pocketbase
 				await pb.collection(row.collectionName).delete(row.id);
-
-				// Remove the deleted item from the updatedItems array
 				updatedItems = updatedItems.filter((item) => item.id !== row.id);
-
 				toast.warning(`Record ${row.id} deleted`, {
 					class:
 						'bg-primary text-white border border-orange-500 rounded-lg px-4 py-3 shadow-lg font-bold',
@@ -191,27 +190,58 @@
 				});
 			} catch (error) {
 				console.error(`Failed to delete record ${row.id}:`, error);
+				toast.error(`Failed to delete record ${row.id}`);
 			}
 		}
 
-		// Update the data prop to trigger reactivity
 		data = updatedItems;
-
 		$showDeleteAlert = false;
 		resetSelectedRows();
-	};
+	}
 
-	let showDeleteAlert = writable(false);
-
-	$: {
-		if (data) {
-			dispatch('dataUpdate', data);
+	function handlePageChange(newPage: number) {
+		if (onPageChange) {
+			onPageChange(newPage);
+		}
+		if (pluginStates.page) {
+			pluginStates.page.pageIndex.set(newPage - 1);
 		}
 	}
+
+	function getPageRange(currentPage: number, totalPages: number): (number | string)[] {
+		if (totalPages <= 7) {
+			return Array.from({ length: totalPages }, (_, i) => i + 1);
+		}
+
+		if (currentPage <= 4) {
+			return [1, 2, 3, 4, 5, '...', totalPages];
+		}
+
+		if (currentPage >= totalPages - 3) {
+			return [1, '...', totalPages - 4, totalPages - 3, totalPages - 2, totalPages - 1, totalPages];
+		}
+
+		return [1, '...', currentPage - 1, currentPage, currentPage + 1, '...', totalPages];
+	}
+
+	// Column hiding setup
+	const ids = flatColumns.map((col) => col.id);
+	let hideForId = Object.fromEntries(ids.map((id) => [id, true]));
+	const colsForHiding = colKeys.map(({ name }) => name);
+	const hidableCols = [...colsForHiding, 'id', 'created', 'updated'];
 
 	$: $hiddenColumnIds = Object.entries(hideForId)
 		.filter(([, hide]) => !hide)
 		.map(([id]) => id);
+
+	$: if (pluginStates.page) {
+		pluginStates.page.pageSize.set($pageSize);
+		pluginStates.page.pageIndex.set($pageIndex);
+	}
+
+	$: if (data) {
+		dispatch('dataUpdate', data);
+	}
 </script>
 
 <Card.Root>
@@ -250,7 +280,6 @@
 			</DropdownMenu.Root>
 		</div>
 		<div class="rounded-md border">
-			<!-- <Separator /> -->
 			<Table.Root {...$tableAttrs}>
 				<Table.Header>
 					{#each $headerRows as headerRow}
@@ -279,13 +308,10 @@
 					{/each}
 				</Table.Header>
 				<Table.Body {...$tableBodyAttrs}>
-					{#each $pageRows as row (row.id)}
+					{#each $rows as row (row.id)}
 						<Subscribe rowAttrs={row.attrs()} let:rowAttrs>
 							<Table.Row
-								on:click={(event) => {
-									//@ts-expect-error - rowClickCallback is defined in the parent component
-									rowClickCallback(event, row.original);
-								}}
+								on:click={(event) => rowClickCallback(event, row.original)}
 								{...rowAttrs}
 								data-state={$selectedDataIds[row.id] && 'selected'}
 								class="group/table-row cursor-pointer"
@@ -315,24 +341,58 @@
 			</Table.Root>
 		</div>
 
-		<div class="flex items-center justify-end space-x-4 py-4">
-			<div class="flex-1 text-sm text-muted-foreground">
-				{Object.keys($selectedDataIds).length} of{' '}
-				{$rows.length} row(s) selected.
+		{#if pagination}
+			<div class="flex items-center justify-end space-x-4 py-4">
+				<div class="flex-1 text-sm text-muted-foreground">
+					{Object.keys($selectedDataIds).length} of {pagination.totalItems} row(s) selected.
+				</div>
+				<div class="flex items-center space-x-2">
+					<Button
+						variant="outline"
+						size="sm"
+						on:click={() => handlePageChange($pageIndex)}
+						disabled={$pageIndex <= 0}
+					>
+						Previous
+					</Button>
+
+					{#if pagination.totalPages <= 7}
+						{#each Array(pagination.totalPages) as _, i}
+							<Button
+								variant={i === $pageIndex ? 'default' : 'outline'}
+								size="sm"
+								on:click={() => handlePageChange(i + 1)}
+							>
+								{i + 1}
+							</Button>
+						{/each}
+					{:else}
+						{#each getPageRange($pageIndex + 1, pagination.totalPages) as pageNum}
+							{#if pageNum === '...'}
+								<span>{pageNum}</span>
+							{:else}
+								<Button
+									variant={pageNum === $pageIndex + 1 ? 'default' : 'outline'}
+									size="sm"
+									on:click={() => handlePageChange(pageNum)}
+								>
+									{pageNum}
+								</Button>
+							{/if}
+						{/each}
+					{/if}
+
+					<Button
+						variant="outline"
+						size="sm"
+						on:click={() => handlePageChange($pageIndex + 2)}
+						disabled={($pageIndex + 1) * $pageSize >= pagination.totalItems}
+					>
+						Next
+					</Button>
+				</div>
 			</div>
-			<Button
-				variant="outline"
-				size="sm"
-				on:click={() => ($pageIndex = $pageIndex - 1)}
-				disabled={!$hasPreviousPage}>Previous</Button
-			>
-			<Button
-				variant="outline"
-				size="sm"
-				disabled={!$hasNextPage}
-				on:click={() => ($pageIndex = $pageIndex + 1)}>Next</Button
-			>
-		</div>
+		{/if}
 	</Card.Content>
 </Card.Root>
 
@@ -342,7 +402,7 @@
 		transition:fly={{ delay: 10, duration: 250, x: 0, y: 300, opacity: 0.5, easing: quintOut }}
 	>
 		<DeleteRecord count={Object.keys($selectedDataIds).length} class="rounded-full shadow-2xl">
-			<Button variant="outline" on:click={() => resetSelectedRows()}>Reset</Button>
+			<Button variant="outline" on:click={resetSelectedRows}>Reset</Button>
 			<Button variant="destructive" on:click={() => ($showDeleteAlert = true)}>Delete</Button>
 		</DeleteRecord>
 	</div>

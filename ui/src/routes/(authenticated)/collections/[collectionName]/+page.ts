@@ -5,19 +5,28 @@ import pb from '$lib/pocketbase';
 import type { RecordModel } from 'pocketbase';
 export const prerender = false;
 
-export const load: PageLoad = async ({ params, fetch, parent }) => {
+export const load: PageLoad = async ({ params, fetch, parent, url }) => {
 	const { collections } = await parent();
 
 	const collectionWithSchema = collections.find((c) => c.name === params.collectionName);
+
+	const page = Number(url.searchParams.get('page')) || 1;
+	const perPage = 2;
 
 	const findRelationFields =
 		(collectionWithSchema?.schema as Partial<RecordModel>[])
 			?.filter((c: Partial<RecordModel>) => c.type === 'relation')
 			.map((c: Partial<RecordModel>) => c.name) || [];
 
+	const relationsToExpand = findRelationFields.join(',');
+
 	const collection: ListResultCollection = await pb
 		.collection(params.collectionName)
-		.getList<Collection>(1, 20, { fetch, expand: findRelationFields.join(','), sort: '-created' });
+		.getList<Collection>(page, perPage, {
+			fetch,
+			expand: relationsToExpand,
+			sort: '-created'
+		});
 
 	const schema: CollectionSchema = [
 		{ name: 'id', type: 'id' },
@@ -29,6 +38,13 @@ export const load: PageLoad = async ({ params, fetch, parent }) => {
 	return {
 		collection,
 		schema,
-		title: collectionWithSchema?.name
+		title: collectionWithSchema?.name,
+		relationsToExpand,
+		pagination: {
+			page,
+			perPage,
+			totalPages: Math.ceil(collection.totalItems / perPage),
+			totalItems: collection.totalItems
+		}
 	};
 };
