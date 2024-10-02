@@ -26,7 +26,7 @@
 			variant="ghost"
 			class={cn(
 				isActive(item.href) ? 'text-primary-foreground hover:text-primary-foreground' : '',
-				'relative justify-start hover:bg-gray-200'
+				'relative justify-start'
 			)}
 			data-sveltekit-noscroll
 		>

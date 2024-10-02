@@ -185,7 +185,7 @@
 
 				toast.warning(`Record ${row.id} deleted`, {
 					class:
-						'bg-orange-400 text-white border border-orange-500 rounded-lg px-4 py-3 shadow-lg font-bold',
+						'bg-primary text-white border border-orange-500 rounded-lg px-4 py-3 shadow-lg font-bold',
 					icon: Trash2,
 					duration: 3000
 				});

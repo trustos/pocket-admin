@@ -54,4 +54,4 @@
 		duration: 3000
 	}}
 />
-<ModeWatcher track={true} defaultMode="light" />
+<ModeWatcher track={true} defaultMode="system" />
