@@ -2,4 +2,6 @@
 	export let value: string;
 </script>
 
-<article class="prose lg:prose-xl max-h-48 max-w-sm scale-[0.65]">{@html value}</article>
+<article class="prose max-h-48 max-w-sm scale-[0.65] dark:prose-invert lg:prose-xl">
+	{@html value}
+</article>

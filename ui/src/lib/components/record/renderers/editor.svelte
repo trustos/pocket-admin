@@ -66,10 +66,7 @@
 			element: document.querySelector('#editor')!,
 			editorProps: {
 				attributes: {
-					class:
-						// 'prose prose-sm sm:prose lg:prose-lg xl:prose-2xl mx-auto focus:outline-none max-w-none overflow-auto bg-card'
-						'prose max-w-none overflow-auto bg-card focus:outline-none'
-					// class="prose max-w-none overflow-auto bg-card"
+					class: 'prose dark:prose-invert max-w-none overflow-auto bg-card focus:outline-none'
 				}
 			},
 			extensions: [
