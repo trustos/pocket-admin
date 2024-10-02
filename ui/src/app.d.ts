@@ -11,7 +11,8 @@ declare global {
 		}
 		// interface PageData {}
 		interface PageState {
-			recordPageData: Record;
+			recordPageData?: Record;
+			hiddenColumns?: string[];
 		}
 		// interface Platform {}
 	}

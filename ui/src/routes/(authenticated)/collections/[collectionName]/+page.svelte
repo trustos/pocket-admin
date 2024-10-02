@@ -9,21 +9,16 @@
 	import { Button } from '$lib/shadcn/components/ui/button';
 	import Plus from 'lucide-svelte/icons/plus';
 	import pb from '$lib/pocketbase';
+	import { writable } from 'svelte/store';
 
 	export let data: PageData;
 
 	$: ({ collection, schema, title, pagination, relationsToExpand } = data);
-	$: items = collection.items;
+	$: items = collection?.items ?? [];
 
-	$: {
-		if (collection) {
-			items = collection.items;
-		}
-	}
+	const hiddenColumnsStore = writable<string[]>([]);
 
-	const handleDataUpdate = (data: Collection[]) => {
-		collection = { ...collection, items: data };
-	};
+	let loading = false;
 
 	const fetchPage = async (pageNum: number) => {
 		const newCollection = await pb
@@ -43,86 +38,69 @@
 		};
 	};
 
-	let loading = false;
-
-	const onPageChange = async (newPage: number) => {
-		loading = true;
-		try {
-			console.log('Page change requested:', newPage);
-			await fetchPage(newPage);
-			const url = new URL(window.location.href);
-			url.searchParams.set('page', newPage.toString());
-			pushState(url.toString(), {});
-
-			// Force a re-render of the DataTable
-			collection = { ...collection };
-		} catch (error) {
-			console.log('Error fetching page', error);
-		} finally {
-			loading = false;
-		}
+	const handleDataUpdate = (data: Collection[]) => {
+		collection = { ...collection, items: data };
 	};
 
-	const onAddNewRecordClick = async () => {
-		const recordHref = `${$page.url.pathname}${`newRecord`}`;
-
-		//Prelaod the data for the record page
+	const navigateToRecord = async (recordId: string) => {
+		const recordHref = `${$page.url.pathname}${recordId}`;
 		const result = await preloadData(recordHref);
 
 		if (result.type === 'loaded' && result.status === 200) {
-			//Remove unserilizable data from the result
 			delete result.data?.menu;
-
 			pushState(recordHref, { recordPageData: result.data });
 		} else {
-			// something bad happened! try navigating
 			goto(recordHref);
 		}
 	};
+
+	const onAddNewRecordClick = () => navigateToRecord('newRecord');
 
 	const onRecordRowClick = async (event: Event, row: Collection) => {
 		const isCellContent =
 			(event.target as HTMLElement)!.nodeName !== 'TD' ||
 			!(event.target as HTMLElement)!.closest('td')?.contains(event.target as HTMLElement);
 
-		//If the click was on a checkbox, don't do anything
 		if (isCellContent) {
 			event.preventDefault();
 			event.stopPropagation();
 			return;
 		}
 
-		const recordHref = `${$page.url.pathname}${row.id}`;
-
-		//Prelaod the data for the record page
-		const result = await preloadData(recordHref);
-
-		if (result.type === 'loaded' && result.status === 200) {
-			//Remove unserilizable data from the result
-			delete result.data?.menu;
-
-			pushState(recordHref, { recordPageData: result.data });
-		} else {
-			// something bad happened! try navigating
-			goto(recordHref);
-		}
+		await navigateToRecord(row.id);
 	};
-
-	$: pageDataAvailable = !!$page.state.recordPageData;
 
 	const onRecordClose = () => {
-		if (pageDataAvailable) {
-			setTimeout(() => {
-				window.history.back();
-			}, 200);
+		if ($page.state.recordPageData) {
+			setTimeout(() => window.history.back(), 200);
 		}
 	};
+
+	const onPageChange = async (newPage: number) => {
+		loading = true;
+		try {
+			await fetchPage(newPage);
+			const url = new URL(window.location.href);
+			url.searchParams.set('page', newPage.toString());
+			pushState(url.toString(), { hiddenColumns: $hiddenColumnsStore });
+			collection = { ...collection };
+		} catch (error) {
+			console.error('Error fetching page', error);
+		} finally {
+			loading = false;
+		}
+	};
+
+	$: if ($page.state.hiddenColumns && Array.isArray($page.state.hiddenColumns)) {
+		hiddenColumnsStore.set($page.state.hiddenColumns);
+	}
 </script>
 
 {#key collection}
 	<DataTable
-		filterPlaceholder={'Filter records'}
+		filterPlaceholder={'Filter records on the current page'}
 		on:dataUpdate={({ detail }) => handleDataUpdate(detail)}
+		on:columnVisibilityChange={({ detail }) => hiddenColumnsStore.set(detail)}
 		{title}
 		{schema}
 		data={items}
@@ -131,12 +109,13 @@
 		{pagination}
 		{onPageChange}
 		{loading}
+		hiddenColumns={$hiddenColumnsStore}
 	>
 		<Button
 			slot="action"
 			class="mt-6 self-end sm:mt-0"
 			variant="default"
-			on:click={() => onAddNewRecordClick()}
+			on:click={onAddNewRecordClick}
 		>
 			<Plus class="mr-2 h-4 w-4" />
 			New record
@@ -145,7 +124,7 @@
 
 	<Drawer.Root
 		shouldScaleBackground
-		open={pageDataAvailable}
+		open={!!$page.state.recordPageData}
 		onClose={onRecordClose}
 		backgroundColor={'black'}
 	>

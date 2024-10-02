@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { createTable, Render, Subscribe, createRender } from 'svelte-headless-table';
 	import { writable } from 'svelte/store';
-	import { createEventDispatcher } from 'svelte';
+	import { createEventDispatcher, onMount } from 'svelte';
 	import { Skeleton } from '$lib/shadcn/components/ui/skeleton';
 	import {
 		DataTableActions,
@@ -50,6 +50,13 @@
 		| undefined = undefined;
 	export let onPageChange: ((page: number) => void) | undefined = undefined;
 	export let loading: boolean = false;
+	export let hiddenColumns: string[] = [];
+
+	let internalHiddenColumns: string[] = [];
+
+	onMount(() => {
+		internalHiddenColumns = hiddenColumns;
+	});
 
 	// Constants
 	const EXCLUDED_COLUMNS = [
@@ -135,19 +142,24 @@
 		...colKeys.map(({ name, type }) =>
 			table.column({
 				id: name,
-				accessor: name,
+				accessor: (row: Collection) => row[name as keyof Collection],
 				header: () => createRender(DataTableHeader, { name, type, showIcons: showHeaderIcons }),
-				cell: ({ value, row }) => createRender(DataTableCell, { name, type, value, record: row }),
+				cell: ({ value, row }: { value: unknown; row: { original: Collection } }) =>
+					createRender(DataTableCell, { name, type, value, record: row.original }),
 				plugins: { sort: { disable: name === 'id' } }
 			})
 		),
-		table.column({
-			id: 'actions',
-			accessor: 'id',
-			header: '',
-			cell: ({ value }) => createRender(DataTableActions, { id: value }),
-			plugins: { sort: { disable: true } }
-		})
+		...(!listCollection
+			? [
+					table.column({
+						id: 'actions',
+						accessor: 'id',
+						header: '',
+						cell: ({ value }) => createRender(DataTableActions, { id: value }),
+						plugins: { sort: { disable: true } }
+					})
+				]
+			: [])
 	];
 
 	const columns = table.createColumns(cols);
@@ -244,6 +256,19 @@
 	$: if (data) {
 		dispatch('dataUpdate', data);
 	}
+
+	$: {
+		if (hiddenColumns !== internalHiddenColumns) {
+			internalHiddenColumns = hiddenColumns;
+			$hiddenColumnIds = hiddenColumns;
+		}
+	}
+
+	const updateHiddenColumns = (newHiddenColumns: string[]) => {
+		internalHiddenColumns = newHiddenColumns;
+		$hiddenColumnIds = newHiddenColumns;
+		dispatch('columnVisibilityChange', newHiddenColumns);
+	};
 </script>
 
 <Card.Root>
@@ -264,22 +289,35 @@
 				type="text"
 				bind:value={$filterValue}
 			/>
-			<DropdownMenu.Root>
-				<DropdownMenu.Trigger asChild let:builder>
-					<Button variant="outline" class="ml-auto" builders={[builder]}>
-						Columns <ChevronDown class="ml-2 h-4 w-4" />
-					</Button>
-				</DropdownMenu.Trigger>
-				<DropdownMenu.Content>
-					{#each flatColumns as col}
-						{#if hidableCols.includes(col.id)}
-							<DropdownMenu.CheckboxItem bind:checked={hideForId[col.id]}>
-								{col.id}
-							</DropdownMenu.CheckboxItem>
-						{/if}
-					{/each}
-				</DropdownMenu.Content>
-			</DropdownMenu.Root>
+			{#if !listCollection}
+				<DropdownMenu.Root>
+					<DropdownMenu.Trigger asChild let:builder>
+						<Button variant="outline" class="ml-auto" builders={[builder]}>
+							Columns <ChevronDown class="ml-2 h-4 w-4" />
+						</Button>
+					</DropdownMenu.Trigger>
+					<DropdownMenu.Content>
+						{#each flatColumns as col}
+							{#if hidableCols.includes(col.id)}
+								<DropdownMenu.CheckboxItem
+									checked={!internalHiddenColumns.includes(col.id)}
+									onCheckedChange={(checked) => {
+										let newHiddenColumns;
+										if (checked) {
+											newHiddenColumns = internalHiddenColumns.filter((id) => id !== col.id);
+										} else {
+											newHiddenColumns = [...internalHiddenColumns, col.id];
+										}
+										updateHiddenColumns(newHiddenColumns);
+									}}
+								>
+									{col.id}
+								</DropdownMenu.CheckboxItem>
+							{/if}
+						{/each}
+					</DropdownMenu.Content>
+				</DropdownMenu.Root>
+			{/if}
 		</div>
 		<div class="rounded-md border">
 			<Table.Root {...$tableAttrs}>
@@ -316,7 +354,7 @@
 							<Table.Row>
 								{#each flatColumns as column}
 									<Table.Cell>
-										<Skeleton class="h-12 w-full" />
+										<Skeleton class="h-8 w-full" />
 									</Table.Cell>
 								{/each}
 							</Table.Row>
