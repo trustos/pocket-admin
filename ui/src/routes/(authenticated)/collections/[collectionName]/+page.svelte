@@ -43,15 +43,24 @@
 		};
 	};
 
-	const onPageChange = async (newPage: number) => {
-		console.log('Page change requested:', newPage);
-		await fetchPage(newPage);
-		const url = new URL(window.location.href);
-		url.searchParams.set('page', newPage.toString());
-		pushState(url.toString(), {});
+	let loading = false;
 
-		// Force a re-render of the DataTable
-		collection = { ...collection };
+	const onPageChange = async (newPage: number) => {
+		loading = true;
+		try {
+			console.log('Page change requested:', newPage);
+			await fetchPage(newPage);
+			const url = new URL(window.location.href);
+			url.searchParams.set('page', newPage.toString());
+			pushState(url.toString(), {});
+
+			// Force a re-render of the DataTable
+			collection = { ...collection };
+		} catch (error) {
+			console.log('Error fetching page', error);
+		} finally {
+			loading = false;
+		}
 	};
 
 	const onAddNewRecordClick = async () => {
@@ -121,6 +130,7 @@
 		rowClickCallback={onRecordRowClick}
 		{pagination}
 		{onPageChange}
+		{loading}
 	>
 		<Button
 			slot="action"

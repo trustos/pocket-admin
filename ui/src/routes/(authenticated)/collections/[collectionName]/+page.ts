@@ -11,7 +11,7 @@ export const load: PageLoad = async ({ params, fetch, parent, url }) => {
 	const collectionWithSchema = collections.find((c) => c.name === params.collectionName);
 
 	const page = Number(url.searchParams.get('page')) || 1;
-	const perPage = 2;
+	const perPage = 10;
 
 	const findRelationFields =
 		(collectionWithSchema?.schema as Partial<RecordModel>[])

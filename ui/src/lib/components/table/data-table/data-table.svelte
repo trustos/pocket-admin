@@ -2,6 +2,7 @@
 	import { createTable, Render, Subscribe, createRender } from 'svelte-headless-table';
 	import { writable } from 'svelte/store';
 	import { createEventDispatcher } from 'svelte';
+	import { Skeleton } from '$lib/shadcn/components/ui/skeleton';
 	import {
 		DataTableActions,
 		DataTableHeader,
@@ -48,6 +49,7 @@
 		  }
 		| undefined = undefined;
 	export let onPageChange: ((page: number) => void) | undefined = undefined;
+	export let loading: boolean = false;
 
 	// Constants
 	const EXCLUDED_COLUMNS = [
@@ -116,8 +118,11 @@
 					table.column({
 						id: 'select',
 						accessor: 'id',
-						header: (_, { pluginStates }) =>
-							createRender(DataTableCheckbox, { checked: pluginStates.select.allPageRowsSelected }),
+						header: (_, { pluginStates }) => {
+							return createRender(DataTableCheckbox, {
+								checked: pluginStates.select.allRowsSelected
+							});
+						},
 						cell: ({ row }, { pluginStates }) =>
 							createRender(DataTableCheckbox, {
 								checked: pluginStates.select.getRowState(row).isSelected,
@@ -132,8 +137,7 @@
 				id: name,
 				accessor: name,
 				header: () => createRender(DataTableHeader, { name, type, showIcons: showHeaderIcons }),
-				cell: ({ value, row }: { value: any; row: { original: Collection } }) =>
-					createRender(DataTableCell, { name, type, value, record: row.original }),
+				cell: ({ value, row }) => createRender(DataTableCell, { name, type, value, record: row }),
 				plugins: { sort: { disable: name === 'id' } }
 			})
 		),
@@ -141,18 +145,24 @@
 			id: 'actions',
 			accessor: 'id',
 			header: '',
-			cell: ({ value }: { value: string }) => createRender(DataTableActions, { id: value }),
+			cell: ({ value }) => createRender(DataTableActions, { id: value }),
 			plugins: { sort: { disable: true } }
 		})
 	];
 
 	const columns = table.createColumns(cols);
-	const { headerRows, pageRows, tableAttrs, tableBodyAttrs, pluginStates, flatColumns, rows } =
+	const { headerRows, tableAttrs, tableBodyAttrs, pluginStates, flatColumns, rows } =
 		table.createViewModel(columns);
 
 	const { filterValue } = pluginStates.filter;
 	const { hiddenColumnIds } = pluginStates.hide;
 	const { selectedDataIds } = pluginStates.select;
+
+	function resetSelectedRows() {
+		selectedDataIds.set({});
+	}
+
+	$: selectedCount = Object.keys($selectedDataIds).length;
 
 	// Event handling
 	const dispatch = createEventDispatcher();
@@ -161,17 +171,9 @@
 		const rowsIds = Object.keys($selectedDataIds);
 		return rowsIds.length
 			? rowsIds
-					.map(
-						(id) =>
-							($pageRows.find((row) => row.id === id) as unknown as { original: Collection })
-								?.original
-					)
+					.map((id) => $rows.find((row) => row.id === id)?.original)
 					.filter((row): row is Collection => row !== undefined)
 			: [];
-	}
-
-	function resetSelectedRows() {
-		$selectedDataIds = {};
 	}
 
 	async function confirmDelete() {
@@ -308,35 +310,48 @@
 					{/each}
 				</Table.Header>
 				<Table.Body {...$tableBodyAttrs}>
-					{#each $rows as row (row.id)}
-						<Subscribe rowAttrs={row.attrs()} let:rowAttrs>
-							<Table.Row
-								on:click={(event) => rowClickCallback(event, row.original)}
-								{...rowAttrs}
-								data-state={$selectedDataIds[row.id] && 'selected'}
-								class="group/table-row cursor-pointer"
-							>
-								{#each row.cells as cell (cell.id)}
-									<Subscribe attrs={cell.attrs()} let:attrs>
-										{@const isFirstCol = row.cells[0].id == cell.id}
-										{@const isLastCol = row.cells[row.cells.length - 1].id == cell.id}
-										<Table.Cell
-											{...attrs}
-											class={`pl-6 group-hover/table-row:bg-muted [&:has([data-menu-trigger])]:bg-card [&:has([role=checkbox])]:bg-card ${
-												isFirstCol
-													? 'sticky left-0 z-10 pl-2'
-													: isLastCol
-														? 'sticky right-0 z-10 pl-2'
-														: ''
-											}`}
-										>
-											<Render of={cell.render()} />
-										</Table.Cell>
-									</Subscribe>
+					{#if loading}
+						{#each Array(10) as _}
+							<!-- Adjust the number of skeleton rows as needed -->
+							<Table.Row>
+								{#each flatColumns as column}
+									<Table.Cell>
+										<Skeleton class="h-12 w-full" />
+									</Table.Cell>
 								{/each}
 							</Table.Row>
-						</Subscribe>
-					{/each}
+						{/each}
+					{:else}
+						{#each $rows as row (row.id)}
+							<Subscribe rowAttrs={row.attrs()} let:rowAttrs>
+								<Table.Row
+									on:click={(event) => rowClickCallback(event, row.original)}
+									{...rowAttrs}
+									data-state={$selectedDataIds[row.id] && 'selected'}
+									class="group/table-row cursor-pointer"
+								>
+									{#each row.cells as cell (cell.id)}
+										<Subscribe attrs={cell.attrs()} let:attrs>
+											{@const isFirstCol = row.cells[0].id == cell.id}
+											{@const isLastCol = row.cells[row.cells.length - 1].id == cell.id}
+											<Table.Cell
+												{...attrs}
+												class={`pl-6 group-hover/table-row:bg-muted [&:has([data-menu-trigger])]:bg-card [&:has([role=checkbox])]:bg-card ${
+													isFirstCol
+														? 'sticky left-0 z-10 pl-2'
+														: isLastCol
+															? 'sticky right-0 z-10 pl-2'
+															: ''
+												}`}
+											>
+												<Render of={cell.render()} />
+											</Table.Cell>
+										</Subscribe>
+									{/each}
+								</Table.Row>
+							</Subscribe>
+						{/each}
+					{/if}
 				</Table.Body>
 			</Table.Root>
 		</div>
@@ -344,14 +359,22 @@
 		{#if pagination}
 			<div class="flex items-center justify-end space-x-4 py-4">
 				<div class="flex-1 text-sm text-muted-foreground">
-					{Object.keys($selectedDataIds).length} of {pagination.totalItems} row(s) selected.
+					{#if loading}
+						<div class="flex-1">
+							<Skeleton class="h-6 w-40" />
+						</div>
+					{:else}
+						<div class="flex-1 text-sm text-muted-foreground">
+							{Object.keys($selectedDataIds).length} of {$rows.length} row(s) selected.
+						</div>
+					{/if}
 				</div>
 				<div class="flex items-center space-x-2">
 					<Button
 						variant="outline"
 						size="sm"
 						on:click={() => handlePageChange($pageIndex)}
-						disabled={$pageIndex <= 0}
+						disabled={$pageIndex <= 0 || loading}
 					>
 						Previous
 					</Button>
@@ -386,7 +409,7 @@
 						variant="outline"
 						size="sm"
 						on:click={() => handlePageChange($pageIndex + 2)}
-						disabled={($pageIndex + 1) * $pageSize >= pagination.totalItems}
+						disabled={($pageIndex + 1) * $pageSize >= pagination.totalItems || loading}
 					>
 						Next
 					</Button>
@@ -396,12 +419,12 @@
 	</Card.Content>
 </Card.Root>
 
-{#if !listCollection && $selectedDataIds && Object.keys($selectedDataIds).length > 0}
+{#if !listCollection && selectedCount > 0}
 	<div
 		class="fixed bottom-32 left-0 right-0 z-20 m-auto w-[400px] lg:left-52"
 		transition:fly={{ delay: 10, duration: 250, x: 0, y: 300, opacity: 0.5, easing: quintOut }}
 	>
-		<DeleteRecord count={Object.keys($selectedDataIds).length} class="rounded-full shadow-2xl">
+		<DeleteRecord count={selectedCount} class="rounded-full shadow-2xl">
 			<Button variant="outline" on:click={resetSelectedRows}>Reset</Button>
 			<Button variant="destructive" on:click={() => ($showDeleteAlert = true)}>Delete</Button>
 		</DeleteRecord>
