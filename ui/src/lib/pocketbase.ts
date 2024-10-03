@@ -8,6 +8,17 @@ class LocalPocketBase extends PocketBase {
 		super(PUBLIC_POCKETBASE_URL);
 	}
 
+	get isPocketAdmin() {
+		const role = this.authStore.model?.expand['role']?.name;
+		return (role && role === 'admin') || false;
+	}
+
+	get pocketAdminRole() {
+		const role = this.authStore.model?.expand['role']?.name;
+
+		return role || null;
+	}
+
 	logout = () => {
 		// await this.collections('auth').delete(this.authStore.get('id')
 		this.authStore.clear();

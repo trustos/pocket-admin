@@ -24,6 +24,8 @@
 	import Button from '$lib/shadcn/components/ui/button/button.svelte';
 	import { goto } from '$app/navigation';
 	import { CheckCircle } from 'lucide-svelte';
+	import { ErrorToast, SuccessToast } from '$lib/components/toast';
+	import type { ClientResponseError } from 'pocketbase';
 
 	const goPreviousPath = () => {
 		goto(`/admin/collections/${$page.params.collectionName}`);
@@ -59,19 +61,17 @@
 					}
 				}
 
-				toast.success(
+				SuccessToast(
 					`${!record ? 'Record created successfully!' : 'Record updated successfully'}`,
 					{
-						class:
-							'bg-green-500 text-white border border-green-700 rounded-lg shadow-lg font-semibold',
 						icon: CheckCircle,
 						duration: 3000
 					}
 				);
 			} catch (error) {
-				toast.error(`An error occurred while saving the record: ${JSON.stringify(error)}`, {
-					class: 'bg-red-400 text-white'
-				});
+				ErrorToast(
+					`An error occurred while saving the record: ${(error as ClientResponseError).message}`
+				);
 			}
 		},
 		onResult: ({ result }) => {

@@ -2,7 +2,7 @@ import type { PageLoad } from './$types';
 import type { Collection, ListResultCollection, CollectionSchema } from '$lib/types';
 
 import pb from '$lib/pocketbase';
-import type { RecordModel } from 'pocketbase';
+import type { ClientResponseError, RecordModel } from 'pocketbase';
 export const prerender = false;
 
 export const load: PageLoad = async ({ params, fetch, parent, url }) => {
@@ -19,32 +19,37 @@ export const load: PageLoad = async ({ params, fetch, parent, url }) => {
 			.map((c: Partial<RecordModel>) => c.name) || [];
 
 	const relationsToExpand = findRelationFields.join(',');
+	try {
+		const collection: ListResultCollection = await pb
+			.collection(params.collectionName)
+			.getList<Collection>(page, perPage, {
+				fetch,
+				expand: relationsToExpand,
+				sort: '-created'
+			});
 
-	const collection: ListResultCollection = await pb
-		.collection(params.collectionName)
-		.getList<Collection>(page, perPage, {
-			fetch,
-			expand: relationsToExpand,
-			sort: '-created'
-		});
+		const schema: CollectionSchema = [
+			{ name: 'id', type: 'id' },
+			...(collectionWithSchema?.schema || []),
+			{ name: 'created', type: 'date' },
+			{ name: 'updated', type: 'date' }
+		];
 
-	const schema: CollectionSchema = [
-		{ name: 'id', type: 'id' },
-		...(collectionWithSchema?.schema || []),
-		{ name: 'created', type: 'date' },
-		{ name: 'updated', type: 'date' }
-	];
-
-	return {
-		collection,
-		schema,
-		title: collectionWithSchema?.name,
-		relationsToExpand,
-		pagination: {
-			page,
-			perPage,
-			totalPages: Math.ceil(collection.totalItems / perPage),
-			totalItems: collection.totalItems
-		}
-	};
+		return {
+			collection,
+			schema,
+			title: collectionWithSchema?.name,
+			relationsToExpand,
+			pagination: {
+				page,
+				perPage,
+				totalPages: Math.ceil(collection.totalItems / perPage),
+				totalItems: collection.totalItems
+			}
+		};
+	} catch (e) {
+		return {
+			error: e as ClientResponseError
+		};
+	}
 };

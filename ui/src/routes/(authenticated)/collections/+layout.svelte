@@ -2,6 +2,7 @@
 	import type { LayoutData } from './$types';
 	import { SideNav } from '$lib/components/nav';
 	import SquareLibrary from 'lucide-svelte/icons/square-library';
+	import Users from 'lucide-svelte/icons/users';
 	import { onNavigate } from '$app/navigation';
 
 	// Define a type for the document with the optional startViewTransition method
@@ -30,11 +31,19 @@
 	export let data: LayoutData;
 	const { collections } = data;
 
+	const collectionIcon = (type: string) => {
+		console.log(type);
+		if (type == 'base') return SquareLibrary;
+		if (type == 'auth') return Users;
+
+		return '';
+	};
+
 	const collectionItems = collections.map((collection) => {
 		return {
 			title: collection.name,
 			href: `/collections/${collection.name}`,
-			icon: collection.type == 'base' ? SquareLibrary : ''
+			icon: collectionIcon(collection.type)
 		};
 	});
 </script>

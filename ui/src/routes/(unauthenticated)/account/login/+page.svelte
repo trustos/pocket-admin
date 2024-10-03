@@ -17,7 +17,9 @@
 		onUpdate: async ({ form }) => {
 			if (form.valid) {
 				try {
-					await pb.collection('users').authWithPassword(form.data.email, form.data.password);
+					await pb.collection('users').authWithPassword(form.data.email, form.data.password, {
+						expand: 'role'
+					});
 					//Set the user store
 				} catch {
 					setMessage(form, 'Failed to authenticate.');

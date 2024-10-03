@@ -9,6 +9,8 @@ import { APP_URL } from '$lib/types/constants';
 import { removeTrailingSlash } from '$lib/helpers';
 import { base } from '$app/paths';
 import { user } from '$lib/stores';
+import { ErrorToast } from '$lib/components/toast';
+import type { ClientResponseError } from 'pocketbase';
 
 export const load: LayoutLoad = async ({ url, route, fetch }) => {
 	const currentPath = removeTrailingSlash(url.pathname);
@@ -17,7 +19,15 @@ export const load: LayoutLoad = async ({ url, route, fetch }) => {
 	if (route.id) {
 		// Refresh the user token if it is valid
 		if (pb.authStore.isValid) {
-			await pb.collection('users').authRefresh({ fetch });
+			try {
+				await pb.collection('users').authRefresh({ fetch, expand: 'role' });
+			} catch (error) {
+				// If the token is invalid, logout the user and redirect to the login page
+				console.log('error', error as ClientResponseError);
+				ErrorToast((error as ClientResponseError).message);
+				pb.logout();
+				throw redirect(302, APP_URL.login);
+			}
 		}
 
 		// Redirect to the home page if is authenticated and on login page

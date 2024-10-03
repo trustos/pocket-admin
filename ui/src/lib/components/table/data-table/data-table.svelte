@@ -23,7 +23,8 @@
 	import { Input } from '$lib/shadcn/components/ui/input';
 	import * as DropdownMenu from '$lib/shadcn/components/ui/dropdown-menu';
 	import { DeleteRecord, DeleteRecordAlert } from '$lib/components/record';
-	import { toast } from 'svelte-sonner';
+	// import { toast } from 'svelte-sonner';
+	import { ErrorToast, WarningToast } from '$lib/components/toast';
 	import { fly } from 'svelte/transition';
 	import { quintOut } from 'svelte/easing';
 	import pb from '$lib/pocketbase';
@@ -196,15 +197,13 @@
 			try {
 				await pb.collection(row.collectionName).delete(row.id);
 				updatedItems = updatedItems.filter((item) => item.id !== row.id);
-				toast.warning(`Record ${row.id} deleted`, {
-					class:
-						'bg-primary text-white border border-orange-500 rounded-lg px-4 py-3 shadow-lg font-bold',
+				WarningToast(`Record ${row.id} deleted`, {
 					icon: Trash2,
 					duration: 3000
 				});
 			} catch (error) {
 				console.error(`Failed to delete record ${row.id}:`, error);
-				toast.error(`Failed to delete record ${row.id}`);
+				ErrorToast(`Failed to delete record ${row.id}`);
 			}
 		}
 
@@ -349,12 +348,16 @@
 				</Table.Header>
 				<Table.Body {...$tableBodyAttrs}>
 					{#if loading}
-						{#each Array(10) as _}
+						{#each Array(pagination?.perPage || 10) as _}
 							<!-- Adjust the number of skeleton rows as needed -->
 							<Table.Row>
 								{#each flatColumns as column}
-									<Table.Cell>
-										<Skeleton class="h-8 w-full" />
+									<Table.Cell class="">
+										{#each Array(2) as __}
+											<Skeleton
+												class="h-3 w-full bg-gray-300 dark:bg-gray-600 [&:not(:first-child)]:mt-[2px]"
+											/>
+										{/each}
 									</Table.Cell>
 								{/each}
 							</Table.Row>
@@ -399,7 +402,7 @@
 				<div class="flex-1 text-sm text-muted-foreground">
 					{#if loading}
 						<div class="flex-1">
-							<Skeleton class="h-6 w-40" />
+							<Skeleton class="h-6 w-40 bg-gray-300 dark:bg-gray-600" />
 						</div>
 					{:else}
 						<div class="flex-1 text-sm text-muted-foreground">

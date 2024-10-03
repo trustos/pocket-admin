@@ -10,8 +10,15 @@
 	import Plus from 'lucide-svelte/icons/plus';
 	import pb from '$lib/pocketbase';
 	import { writable } from 'svelte/store';
+	import { ErrorToast } from '$lib/components/toast';
 
 	export let data: PageData;
+
+	if (data.error) {
+		console.log(data.error);
+		ErrorToast(data.error.message);
+		window.history.back();
+	}
 
 	$: ({ collection, schema, title, pagination, relationsToExpand } = data);
 	$: items = collection?.items ?? [];

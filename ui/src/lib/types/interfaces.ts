@@ -1,5 +1,6 @@
 import type { RecordModel } from 'pocketbase';
 import type { CollectionSchema } from './types';
+import type { ToastOptions, ToastT } from 'svelte-sonner';
 
 type MenuPosition = 'top' | 'bottom';
 
@@ -15,6 +16,10 @@ export interface Collection extends RecordModel {
 	collectionId: string;
 	id: string;
 	name: string;
-	recordsCount?: number;
+	type: string;
 	schema: CollectionSchema;
+}
+
+export interface ToastExtendedOptions extends ToastOptions {
+	icon?: ToastT['icon'];
 }

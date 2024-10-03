@@ -1,50 +1,47 @@
 import pb from '$lib/pocketbase';
 import type { LayoutLoad } from './$types';
 
-import type { Collection, CollectionSchema } from '$lib/types';
+import type { Collection, CollectionSchema, ListResultCollection } from '$lib/types';
 
 export const load: LayoutLoad = async ({ fetch }) => {
-	const allCollections = await pb
+	const collections = await pb
 		.collection('admin_collections')
-		.getFullList<Collection>({ fetch, sort: 'name' });
+		.getList<Collection>(1, 500, { fetch, sort: 'name', filter: pb.filter(`type = 'base'`) });
 
-	// Filter out base collections
-	const collections = allCollections.filter((c) => c.type === 'base');
-	const adminCollection = allCollections.find(
-		(c) => c.type === 'view' && c.name === 'admin_collections'
-	);
+	// Filter out non-base collections
+	collections.items.filter((c) => c.type === 'base');
 
-	if (!allCollections || !allCollections.length) {
+	console.log(pb.isPocketAdmin);
+	console.log(pb.pocketAdminRole);
+
+	console.log(collections);
+
+	if (pb.isPocketAdmin) {
+		const users: ListResultCollection = await pb
+			.collection('users')
+			.getList(1, 500, { fetch, expand: 'role' });
+
+		if (users && users.items) {
+			const usersCollection = users.items[0];
+			usersCollection.name = 'users';
+			usersCollection.type = 'auth';
+
+			collections.items = [...collections.items, ...(users.items as Collection[])];
+		}
+	}
+
+	if (!collections || !collections.items.length) {
 		return {
 			collections: [],
 			schema: []
 		};
 	}
 
-	const updatedCollections = await Promise.all(
-		collections.map(async (collection) => {
-			let recordsCount = 0;
-
-			try {
-				recordsCount = (await pb.collection(collection.name).getList(1, 1, { fetch })).totalItems;
-			} catch (e) {
-				console.log('error', e);
-			}
-
-			// Add records count to collection
-			collection.recordsCount = recordsCount;
-
-			return collection;
-		})
-	);
-
-	const schema: CollectionSchema = [
-		...(adminCollection?.schema || []),
-		{ name: 'recordsCount', type: 'number' }
-	];
+	const schema: CollectionSchema = [...(collections.items[0]?.schema || [])];
 
 	return {
-		collections: updatedCollections || [],
+		// Filter out non-base collections
+		collections: collections.items,
 		schema
 	};
 };
