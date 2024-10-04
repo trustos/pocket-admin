@@ -3,7 +3,6 @@
 	import type { PageData } from './$types';
 	import { cn } from '$lib/shadcn/utils';
 	import * as Form from '$lib/shadcn/components/ui/form';
-	import { toast } from 'svelte-sonner';
 	import { recordSchema } from '$lib/schemas';
 	import { fieldIcons } from '$lib/types';
 	import pb from '$lib/pocketbase';
@@ -59,15 +58,15 @@
 					} else {
 						await pb.collection($page.params.collectionName).create(form.data);
 					}
-				}
 
-				SuccessToast(
-					`${!record ? 'Record created successfully!' : 'Record updated successfully'}`,
-					{
-						icon: CheckCircle,
-						duration: 3000
-					}
-				);
+					SuccessToast(
+						`${!record ? 'Record created successfully!' : 'Record updated successfully'}`,
+						{
+							icon: CheckCircle,
+							duration: 3000
+						}
+					);
+				}
 			} catch (error) {
 				ErrorToast(
 					`An error occurred while saving the record: ${(error as ClientResponseError).message}`

@@ -15,7 +15,6 @@
 	export let data: PageData;
 
 	if (data.error) {
-		console.log(data.error);
 		ErrorToast(data.error.message);
 		window.history.back();
 	}

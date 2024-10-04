@@ -89,70 +89,73 @@
 </script>
 
 <div class="flex w-full justify-center">
-	<div class="inline-flex items-center space-x-2 rounded-md border bg-background p-2">
-		<div class="flex flex-col items-center">
-			<!-- class="rounded-md p-1 hover:bg-muted" -->
-			<Button
-				on:click={incrementHour}
-				variant="ghost"
-				size="icon"
-				class="h-8 w-8"
-				aria-label="Increment hour"
-			>
-				<ChevronUp class="h-4 w-4" />
-			</Button>
+	<div class="inline-flex items-center space-x-2 rounded-md border bg-background p-1">
+		<div class="flex items-center">
+			<div class="flex flex-col">
+				<Button
+					on:click={incrementHour}
+					variant="ghost"
+					size="icon"
+					class="h-6 w-6 p-0"
+					aria-label="Increment hour"
+				>
+					<ChevronUp class="h-3 w-3" />
+				</Button>
+				<Button
+					on:click={decrementHour}
+					variant="ghost"
+					size="icon"
+					class="h-6 w-6 p-0"
+					aria-label="Decrement hour"
+				>
+					<ChevronDown class="h-3 w-3" />
+				</Button>
+			</div>
 			<input
 				type="text"
 				value={formatNumber(hour)}
 				on:blur={validateHour}
 				on:keydown={(e) => handleKeydown(e, 'hour')}
-				class="w-8 bg-transparent text-center"
+				class="w-6 bg-transparent text-center text-sm"
 				inputmode="numeric"
 				pattern="([01]?[0-9]|2[0-3])"
 				maxlength="2"
 				aria-label="Hour"
 			/>
-			<Button
-				on:click={decrementHour}
-				variant="ghost"
-				size="icon"
-				class="h-8 w-8"
-				aria-label="Decrement hour"
-			>
-				<ChevronDown class="h-4 w-4" />
-			</Button>
 		</div>
-		<span class="text-xl">:</span>
-		<div class="flex flex-col items-center">
-			<Button
-				on:click={incrementMinute}
-				variant="ghost"
-				size="icon"
-				class="h-8 w-8"
-				aria-label="Increment minute"
-			>
-				<ChevronUp class="h-4 w-4" />
-			</Button>
+		<span class="text-sm font-bold">:</span>
+		<div class="flex items-center">
 			<input
 				type="text"
 				value={formatNumber(minute)}
 				on:blur={validateMinute}
 				on:keydown={(e) => handleKeydown(e, 'minute')}
-				class="w-8 bg-transparent text-center"
+				class="w-6 bg-transparent text-center text-sm"
 				inputmode="numeric"
 				pattern="[0-5][0-9]"
 				maxlength="2"
 				aria-label="Minute"
 			/>
-			<Button
-				on:click={decrementMinute}
-				variant="ghost"
-				size="icon"
-				class="h-8 w-8"
-				aria-label="Decrement minute"
-			>
-				<ChevronDown class="h-4 w-4" />
-			</Button>
+			<div class="flex flex-col">
+				<Button
+					on:click={incrementMinute}
+					variant="ghost"
+					size="icon"
+					class="h-6 w-6 p-0"
+					aria-label="Increment minute"
+				>
+					<ChevronUp class="h-3 w-3" />
+				</Button>
+				<Button
+					on:click={decrementMinute}
+					variant="ghost"
+					size="icon"
+					class="h-6 w-6 p-0"
+					aria-label="Decrement minute"
+				>
+					<ChevronDown class="h-3 w-3" />
+				</Button>
+			</div>
 		</div>
 	</div>
 </div>

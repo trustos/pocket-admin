@@ -1,4 +1,4 @@
-import { nullable, z } from 'zod';
+import { z } from 'zod';
 import type { CollectionSchema } from '$lib/types';
 
 // A function to generate the Zod schema dynamically
@@ -9,24 +9,38 @@ const generateZodSchema = (fields: CollectionSchema) => {
 		switch (field.type) {
 			case 'text':
 				fieldSchema = z.string();
-				if (field?.options?.min) fieldSchema = fieldSchema.min(field.options.min);
-				if (field?.options?.max) fieldSchema = fieldSchema.max(field.options.max);
+				if (field?.options?.min) fieldSchema = fieldSchema.min(Number(field.options.min));
+				if (field?.options?.max) fieldSchema = fieldSchema.max(Number(field.options.max));
 				break;
 
 			case 'file':
-				fieldSchema = z.array(z.any()).max(field.options?.maxSelect || 99);
+				fieldSchema = z
+					.union([z.string(), z.array(z.union([z.string(), z.instanceof(File)]))])
+					.refine(
+						(value) => {
+							if (typeof value === 'string') return true;
+							if (Array.isArray(value)) {
+								return value.length <= (field.options?.maxSelect || 99);
+							}
+							return false;
+						},
+						`Maximum of ${field.options?.maxSelect || 99} files allowed`
+					);
 
-				//Validate mimeTypes validation for file type
-				if (field.options?.mimeTypes && field.options?.mimeTypes.length > 0) {
+				if (field.options?.mimeTypes && field.options.mimeTypes.length > 0) {
 					fieldSchema = fieldSchema.refine(
-						(files) => {
-							return files.every((file: File | string) => {
-								if (typeof file === 'string') {
-									return true;
-								} else if (file instanceof File) {
-									return field.options?.mimeTypes?.includes(file.type);
-								}
-							});
+						(value) => {
+							if (typeof value === 'string') return true;
+							if (Array.isArray(value)) {
+								return value.every((item) => {
+									if (typeof item === 'string') return true;
+									if (item instanceof File) {
+										return field.options?.mimeTypes?.includes(item.type) ?? true;
+									}
+									return false;
+								});
+							}
+							return false;
 						},
 						`File type must be one of ${field.options.mimeTypes.join(', ')}`
 					);
