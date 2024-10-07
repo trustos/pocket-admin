@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { auth } from '$lib/stores';
 	import type { PageData } from './$types';
 	import { DataTable } from '$lib/components/table';
 	import type { Collection } from '$lib/types';
@@ -8,7 +9,6 @@
 	import * as Drawer from '$lib/shadcn/components/ui/drawer';
 	import { Button } from '$lib/shadcn/components/ui/button';
 	import Plus from 'lucide-svelte/icons/plus';
-	import pb from '$lib/pocketbase';
 	import { writable } from 'svelte/store';
 	import { ErrorToast } from '$lib/components/toast';
 
@@ -27,7 +27,7 @@
 	let loading = false;
 
 	const fetchPage = async (pageNum: number) => {
-		const newCollection = await pb
+		const newCollection = await auth.pb
 			.collection(title!)
 			.getList<Collection>(pageNum, pagination.perPage, {
 				expand: relationsToExpand,

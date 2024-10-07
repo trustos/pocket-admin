@@ -1,23 +1,17 @@
-import pb from '$lib/pocketbase';
+import { auth } from '$lib/stores';
 import type { LayoutLoad } from './$types';
-
 import type { Collection, CollectionSchema, ListResultCollection } from '$lib/types';
 
 export const load: LayoutLoad = async ({ fetch }) => {
-	const collections = await pb
+	const collections = await auth.pb
 		.collection('admin_collections')
-		.getList<Collection>(1, 500, { fetch, sort: 'name', filter: pb.filter(`type = 'base'`) });
+		.getList<Collection>(1, 500, { fetch, sort: 'name', filter: 'type = "base"' });
 
 	// Filter out non-base collections
-	collections.items.filter((c) => c.type === 'base');
+	collections.items = collections.items.filter((c: Collection) => c.type === 'base');
 
-	console.log(pb.isPocketAdmin);
-	console.log(pb.pocketAdminRole);
-
-	console.log(collections);
-
-	if (pb.isPocketAdmin) {
-		const users: ListResultCollection = await pb
+	if (auth.isPocketAdmin) {
+		const users: ListResultCollection = await auth.pb
 			.collection('users')
 			.getList(1, 500, { fetch, expand: 'role' });
 
@@ -40,7 +34,6 @@ export const load: LayoutLoad = async ({ fetch }) => {
 	const schema: CollectionSchema = [...(collections.items[0]?.schema || [])];
 
 	return {
-		// Filter out non-base collections
 		collections: collections.items,
 		schema
 	};

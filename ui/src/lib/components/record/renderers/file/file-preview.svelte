@@ -1,8 +1,8 @@
 <script lang="ts">
+	import { auth } from '$lib/stores';
 	import { Tooltip } from '$lib/components/common';
 	import { Badge } from '$lib/shadcn/components/ui/badge';
 	import Placeholder from '$lib/images/file-placeholder.svg';
-	import pb from '$lib/pocketbase';
 
 	import X from 'lucide-svelte/icons/x';
 	import type { RecordModel } from 'pocketbase';
@@ -18,6 +18,7 @@
 
 	const isFile = (fileName: unknown) => fileName instanceof File;
 
+	// Remove the file from the form data
 	const removeFileHandler = (file: string | File | string[]) => {
 		if (singleFile) {
 			value = '';
@@ -43,12 +44,15 @@
 	};
 
 	const url = (fileName: string | File) => {
-		// If the is a file object, we need to read it as a data URL
+		// If it's a file object, we need to read it as a data URL
 		if (fileName instanceof File) {
 			return URL.createObjectURL(fileName);
 		}
-
-		return pb.files.getUrl(record, fileName, { thumb: '100x100' });
+		if (record) {
+			return auth.pb.files.getUrl(record, fileName, { thumb: '100x100' });
+		}
+		// If there's no record, return a placeholder or handle it appropriately
+		return Placeholder;
 	};
 
 	export let value: string[] | string;

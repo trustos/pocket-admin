@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { NotAvailable } from '$lib/components/table/renderers';
-	import pb from '$lib/pocketbase';
+	import { auth } from '$lib/stores';
 	import type { Collection } from '$lib/types';
 	import Placeholder from '$lib/images/file-placeholder.svg';
 
@@ -13,7 +13,8 @@
 		target.style.padding = '10px';
 	};
 
-	const src = (fileName: string) => pb.files.getUrl(collection, fileName, { thumb: '100x100' });
+	const src = (fileName: string) =>
+		auth.pb.files.getUrl(collection, fileName, { thumb: '100x100' });
 </script>
 
 {#if value.length}

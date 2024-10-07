@@ -5,7 +5,7 @@
 	import * as Form from '$lib/shadcn/components/ui/form';
 	import { recordSchema } from '$lib/schemas';
 	import { fieldIcons } from '$lib/types';
-	import pb from '$lib/pocketbase';
+	import { auth } from '$lib/stores';
 	import { RecordField } from '$lib/components/record';
 	import { excludeRecordProperties } from '$lib/helpers';
 	import { page } from '$app/stores';
@@ -54,9 +54,9 @@
 			try {
 				if (form.valid) {
 					if (record) {
-						await pb.collection(record.collectionName).update(record.id, form.data);
+						await auth.pb.collection(record.collectionName).update(record.id, form.data);
 					} else {
-						await pb.collection($page.params.collectionName).create(form.data);
+						await auth.pb.collection($page.params.collectionName).create(form.data);
 					}
 
 					SuccessToast(

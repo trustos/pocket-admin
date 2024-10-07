@@ -1,5 +1,5 @@
 import type { PageLoad } from './$types';
-import pb from '$lib/pocketbase';
+import { auth } from '$lib/stores';
 import type { RecordModel } from 'pocketbase';
 
 export const load: PageLoad = async ({ params, parent, fetch }) => {
@@ -15,7 +15,7 @@ export const load: PageLoad = async ({ params, parent, fetch }) => {
 	let record: RecordModel | undefined;
 
 	if (params.recordId !== 'newRecord') {
-		record = await pb
+		record = await auth.pb
 			.collection(params.collectionName)
 			.getOne(params.recordId, { fetch, expand: findRelationFields.join(',') });
 	}

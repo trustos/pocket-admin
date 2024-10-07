@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { auth } from '$lib/stores';
 	import { createEventDispatcher } from 'svelte';
 	import { Button } from '$lib/shadcn/components/ui/button';
 	import {
@@ -16,7 +17,6 @@
 	import { onMount } from 'svelte';
 	import RelationList from './relation-list.svelte';
 	import type { RecordModel } from 'pocketbase';
-	import pb from '$lib/pocketbase';
 	import { getRelationName } from '$lib/helpers';
 
 	export let selectedRelations: RecordModel[] = [];
@@ -91,7 +91,7 @@
 	}
 
 	async function fetchRelationsFromPocketbase(collectionId: string) {
-		const collection = await pb.collection(collectionId).getFullList();
+		const collection = await auth.pb.collection(collectionId).getFullList();
 		return collection || [];
 	}
 

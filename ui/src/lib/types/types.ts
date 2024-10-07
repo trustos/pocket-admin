@@ -1,4 +1,4 @@
-import type { ListResult, RecordModel } from 'pocketbase';
+import type { AuthModel, ListResult, RecordModel } from 'pocketbase';
 import type { Collection } from './interfaces';
 import type { Column } from 'svelte-headless-table';
 
@@ -43,3 +43,8 @@ export type SchemaField = {
 };
 
 export type CollectionSchema = SchemaField[];
+
+export type User = AuthModel & {
+	paRole: string;
+	// You can add additional properties here if needed
+};

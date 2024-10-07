@@ -1,15 +1,12 @@
 <script lang="ts">
-	import pb from '$lib/pocketbase';
 	import * as DropdownMenu from '$lib/shadcn/components/ui/dropdown-menu';
 	import { Button } from '$lib/shadcn/components/ui/button';
 	import UserRound from 'lucide-svelte/icons/user-round';
-	import { goto } from '$app/navigation';
 	import { base } from '$app/paths';
-	import { user } from '$lib/stores';
+	import { auth } from '$lib/stores';
 
 	const logoutHandler = () => {
-		pb.logout();
-		goto(base);
+		auth.logout();
 	};
 </script>
 
@@ -20,7 +17,7 @@
 		</Button>
 	</DropdownMenu.Trigger>
 	<DropdownMenu.Content align="end">
-		<DropdownMenu.Label>{$user?.name}</DropdownMenu.Label>
+		<DropdownMenu.Label>{$auth?.name || $auth?.email}</DropdownMenu.Label>
 		<DropdownMenu.Separator />
 		<DropdownMenu.Item href={`${base}/account`}>Profile</DropdownMenu.Item>
 		<DropdownMenu.Separator />

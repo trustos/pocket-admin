@@ -32,7 +32,6 @@
 	const { collections } = data;
 
 	const collectionIcon = (type: string) => {
-		console.log(type);
 		if (type == 'base') return SquareLibrary;
 		if (type == 'auth') return Users;
 

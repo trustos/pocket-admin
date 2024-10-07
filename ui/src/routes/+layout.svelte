@@ -1,9 +1,8 @@
 <script lang="ts">
 	import '../app.css';
 	import type { LayoutData } from './$types';
-	import { setContext } from 'svelte';
-	import { user } from '$lib/stores';
-	import pb from '$lib/pocketbase';
+	import { auth } from '$lib/stores/auth';
+	import { onMount } from 'svelte';
 
 	import { Breadcrumbs } from '$lib/components/breadcrumbs';
 	import { Nav, NavMobile } from '$lib/components/nav';
@@ -13,17 +12,13 @@
 
 	export let data: LayoutData;
 
-	$: if (pb.authStore.isValid) {
-		user.set(pb.authStore.model);
-		setContext('user', pb.authStore.model);
-	} else {
-		user.set(null);
-		pb.authStore.clear();
-	}
+	onMount(() => {
+		auth.initialize();
+	});
 </script>
 
 <div class="flex min-h-screen w-full flex-col bg-card" data-vaul-drawer-wrapper>
-	{#if $user}
+	{#if $auth}
 		<aside class="fixed inset-y-0 left-0 z-10 hidden w-14 flex-col border-r bg-background sm:flex">
 			<Nav menu={data.menu} />
 		</aside>

@@ -6,22 +6,18 @@
 	import { fly } from 'svelte/transition';
 	import { quintOut } from 'svelte/easing';
 
+	import { auth } from '$lib/stores/auth';
 	import { superForm, setMessage, defaults } from 'sveltekit-superforms';
 	import { zod } from 'sveltekit-superforms/adapters';
 	import { loginSchema } from '$lib/schemas';
-	import pb from '$lib/pocketbase';
 
 	const form = superForm(defaults(zod(loginSchema)), {
 		SPA: true,
 		validators: zod(loginSchema),
 		onUpdate: async ({ form }) => {
 			if (form.valid) {
-				try {
-					await pb.collection('users').authWithPassword(form.data.email, form.data.password, {
-						expand: 'role'
-					});
-					//Set the user store
-				} catch {
+				const { success } = await auth.login(form.data.email, form.data.password);
+				if (!success) {
 					setMessage(form, 'Failed to authenticate.');
 				}
 			}

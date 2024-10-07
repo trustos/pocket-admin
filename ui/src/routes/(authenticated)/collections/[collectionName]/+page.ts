@@ -1,7 +1,7 @@
 import type { PageLoad } from './$types';
 import type { Collection, ListResultCollection, CollectionSchema } from '$lib/types';
 
-import pb from '$lib/pocketbase';
+import { auth } from '$lib/stores';
 import type { ClientResponseError, RecordModel } from 'pocketbase';
 export const prerender = false;
 
@@ -20,7 +20,7 @@ export const load: PageLoad = async ({ params, fetch, parent, url }) => {
 
 	const relationsToExpand = findRelationFields.join(',');
 	try {
-		const collection: ListResultCollection = await pb
+		const collection: ListResultCollection = await auth.pb
 			.collection(params.collectionName)
 			.getList<Collection>(page, perPage, {
 				fetch,

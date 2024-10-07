@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { auth } from '$lib/stores';
 	import { createTable, Render, Subscribe, createRender } from 'svelte-headless-table';
 	import { writable } from 'svelte/store';
 	import { createEventDispatcher, onMount } from 'svelte';
@@ -27,7 +28,6 @@
 	import { ErrorToast, WarningToast } from '$lib/components/toast';
 	import { fly } from 'svelte/transition';
 	import { quintOut } from 'svelte/easing';
-	import pb from '$lib/pocketbase';
 	import ArrowUpDown from 'lucide-svelte/icons/arrow-up-down';
 	import ChevronDown from 'lucide-svelte/icons/chevron-down';
 	import { Trash2 } from 'lucide-svelte';
@@ -195,7 +195,7 @@
 
 		for (const row of rows) {
 			try {
-				await pb.collection(row.collectionName).delete(row.id);
+				await auth.pb.collection(row.collectionName).delete(row.id);
 				updatedItems = updatedItems.filter((item) => item.id !== row.id);
 				WarningToast(`Record ${row.id} deleted`, {
 					icon: Trash2,

@@ -63,8 +63,6 @@
 	};
 
 	const handleTimeChange = (event: CustomEvent) => {
-		// console.log(event.detail.time);
-		// const [hours, minutes] = (event.target as HTMLInputElement).value.split(':');
 		const [hours, minutes] = event.detail.time.split(':');
 		dateTime = dateTime.set({
 			hour: parseInt(hours),
@@ -128,7 +126,7 @@
 	>
 		<Tooltip text="Clear date">
 			<Eraser
-				class={`transition-all ${value ? 'hover:animate-wiggle text-primary' : 'text-muted'}`}
+				class={`transition-all ${value ? 'text-primary hover:animate-wiggle' : 'text-muted'}`}
 			/>
 		</Tooltip>
 	</span>

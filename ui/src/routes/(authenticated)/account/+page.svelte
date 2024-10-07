@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { user } from '$lib/stores';
+	import { auth } from '$lib/stores';
 	import * as Card from '$lib/shadcn/components/ui/card';
 	import { Label } from '$lib/shadcn/components/ui/label';
 </script>
@@ -15,14 +15,14 @@
 		<Card.Content class="space-y-4">
 			<div class="space-y-2">
 				<Label for="name">Name</Label>
-				<p id="name" class="text-sm">{$user?.name}</p>
+				<p id="name" class="text-sm">{$auth?.name}</p>
 			</div>
 			<div class="space-y-2">
 				<Label for="email">Email</Label>
-				<p id="email" class="text-sm">{$user?.email}</p>
+				<p id="email" class="text-sm">{$auth?.email}</p>
 			</div>
-			{#if $user}
-				{#each Object.entries($user) as [key, value]}
+			{#if $auth}
+				{#each Object.entries($auth) as [key, value]}
 					{#if key !== 'name' && key !== 'email'}
 						<div class="space-y-2">
 							<Label for={key}>{key}</Label>
