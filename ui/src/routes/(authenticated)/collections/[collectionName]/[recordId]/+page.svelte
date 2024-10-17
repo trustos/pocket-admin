@@ -39,7 +39,8 @@
 		'updated',
 		'collectionId',
 		'collectionName',
-		'expand'
+		'expand',
+		'role'
 	];
 
 	const editableRecord = record

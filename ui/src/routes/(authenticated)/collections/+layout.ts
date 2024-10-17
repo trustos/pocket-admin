@@ -5,23 +5,13 @@ import type { Collection, CollectionSchema, ListResultCollection } from '$lib/ty
 export const load: LayoutLoad = async ({ fetch }) => {
 	const collections = await auth.pb
 		.collection('admin_collections')
-		.getList<Collection>(1, 500, { fetch, sort: 'name', filter: 'type = "base"' });
+		.getList<Collection>(1, 500, { fetch, sort: 'name', filter: 'type = "base" || type = "auth"' });
 
-	// Filter out non-base collections
-	collections.items = collections.items.filter((c: Collection) => c.type === 'base');
-
-	if (auth.isPocketAdmin) {
-		const users: ListResultCollection = await auth.pb
-			.collection('users')
-			.getList(1, 500, { fetch, expand: 'role' });
-
-		if (users && users.items) {
-			const usersCollection = users.items[0];
-			usersCollection.name = 'users';
-			usersCollection.type = 'auth';
-
-			collections.items = [...collections.items, ...(users.items as Collection[])];
-		}
+	if (!auth.isPocketAdmin) {
+		// Filter out base collections
+		collections.items = collections.items.filter((c: Collection) => c.type === 'base');
+		// Filter out the admin_roles collection
+		collections.items = collections.items.filter((c: Collection) => c.name !== 'admin_roles');
 	}
 
 	if (!collections || !collections.items.length) {
@@ -32,6 +22,8 @@ export const load: LayoutLoad = async ({ fetch }) => {
 	}
 
 	const schema: CollectionSchema = [...(collections.items[0]?.schema || [])];
+
+	console.log(collections);
 
 	return {
 		collections: collections.items,

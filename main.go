@@ -69,7 +69,7 @@ func createAdminCollectionsView(app core.App) error {
 		Query: `
 	SELECT id, name, type, schema, listRule, viewRule, createRule, updateRule, deleteRule
 	FROM _collections
-	WHERE type = 'base'
+	WHERE type IN ('base', 'auth')
 	UNION ALL
 	SELECT id, name, 'view' AS type, schema,
     NULL AS listRule,
@@ -139,7 +139,7 @@ func updateUsersCollection(app core.App) error {
 		roleField := &schema.SchemaField{
 			Name:     "role",
 			Type:     schema.FieldTypeRelation,
-			Required: true,
+			Required: false,
 			Options: &schema.RelationOptions{
 				MaxSelect:     types.Pointer(1),
 				CollectionId:  "admin_roles",
