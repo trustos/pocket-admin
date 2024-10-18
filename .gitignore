@@ -1,3 +1,10 @@
-pocket-admin
-pb_data
+# OS generated files
 .DS_Store
+
+
+# PocketBase
+pb_migrations/
+pb_data
+
+# PocketAdmin
+pocket-admin
