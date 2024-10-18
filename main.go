@@ -92,14 +92,13 @@ func createAdminRolesCollection(app core.App) error {
 
 	collection = &models.Collection{}
 	collection.MarkAsNew()
-	collection.Id = "admin_roles"
 	collection.Name = "admin_roles"
 	collection.Type = models.CollectionTypeBase
 	collection.ListRule = types.Pointer("@request.auth.role.name = 'admin'")
 	collection.ViewRule = types.Pointer("@request.auth.role.name = 'admin'")
-	collection.CreateRule = types.Pointer("@request.auth.role.name = 'admin'")
-	collection.UpdateRule = types.Pointer("@request.auth.role.name = 'admin'")
-	collection.DeleteRule = types.Pointer("@request.auth.role.name = 'admin'")
+	collection.CreateRule = nil
+	collection.UpdateRule = nil
+	collection.DeleteRule = nil
 
 	collection.Schema = schema.NewSchema(
 		&schema.SchemaField{

@@ -14,6 +14,7 @@ export const load: PageLoad = async ({ params, parent, fetch }) => {
 
 	let record: RecordModel | undefined;
 
+	// Fetch record if not new
 	if (params.recordId !== 'newRecord') {
 		record = await auth.pb
 			.collection(params.collectionName)

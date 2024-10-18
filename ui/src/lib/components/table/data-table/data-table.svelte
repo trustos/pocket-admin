@@ -31,6 +31,7 @@
 	import ArrowUpDown from 'lucide-svelte/icons/arrow-up-down';
 	import ChevronDown from 'lucide-svelte/icons/chevron-down';
 	import { Trash2 } from 'lucide-svelte';
+	import { ClientResponseError } from 'pocketbase';
 
 	// Props
 	export let data: Collection[] = [];
@@ -203,7 +204,7 @@
 				});
 			} catch (error) {
 				console.error(`Failed to delete record ${row.id}:`, error);
-				ErrorToast(`Failed to delete record ${row.id}`);
+				ErrorToast(`Failed to delete record ${row.id}: ${(error as ClientResponseError).message}`);
 			}
 		}
 
