@@ -6,4 +6,4 @@
 	export let value: RecordModel[keyof RecordModel];
 </script>
 
-<Input {...attrs} bind:value type="password" />
+<Input {...attrs} bind:value type="password" autocomplete="new-password" />

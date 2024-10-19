@@ -41,6 +41,7 @@ export type SchemaField = {
 	system?: boolean;
 	unique?: boolean;
 	presentable?: boolean;
+	label?: string;
 };
 
 export type CollectionSchema = SchemaField[];

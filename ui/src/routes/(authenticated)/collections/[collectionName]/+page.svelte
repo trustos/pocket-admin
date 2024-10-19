@@ -19,8 +19,15 @@
 		window.history.back();
 	}
 
-	$: ({ collection, schema, title, pagination, relationsToExpand } = data);
+	$: ({ collection, schema, title, pagination, relationsToExpand, collectionType } = data);
 	$: items = collection?.items ?? [];
+
+	// Add email and verified columns to the schema for an auth collection
+	$: if (collectionType && collectionType === 'auth') {
+		schema?.splice(1, 0, { name: 'username', type: 'text' });
+		schema?.splice(schema.length - 2, 0, { name: 'email', type: 'email' });
+		schema?.splice(schema.length - 2, 0, { name: 'verified', type: 'bool' });
+	}
 
 	const hiddenColumnsStore = writable<string[]>([]);
 

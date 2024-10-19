@@ -28,16 +28,6 @@ export const load: PageLoad = async ({ params, fetch, parent, url }) => {
 				sort: '-created'
 			});
 
-		if (collectionWithSchema?.schema && collectionWithSchema?.type === 'auth') {
-			if (!collectionWithSchema?.schema.find((field) => field.name === 'email')) {
-				collectionWithSchema.schema.push({ name: 'email', type: 'email' });
-			}
-
-			if (!collectionWithSchema?.schema.find((field) => field.name === 'verified')) {
-				collectionWithSchema.schema.push({ name: 'verified', type: 'bool' });
-			}
-		}
-
 		const schema: CollectionSchema = [
 			{ name: 'id', type: 'id' },
 			...(collectionWithSchema?.schema || []),
@@ -47,8 +37,9 @@ export const load: PageLoad = async ({ params, fetch, parent, url }) => {
 
 		return {
 			collection,
-			schema,
+			schema: [...schema],
 			title: collectionWithSchema?.name,
+			collectionType: collectionWithSchema?.type,
 			relationsToExpand,
 			pagination: {
 				page,

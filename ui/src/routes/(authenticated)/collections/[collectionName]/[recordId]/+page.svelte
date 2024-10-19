@@ -16,7 +16,7 @@
 	export let cancelCallback: (() => void) | undefined = undefined;
 	export { className as class };
 
-	const { record, schema } = data;
+	const { record, schema, collectionType } = data;
 
 	import { superForm, defaults } from 'sveltekit-superforms';
 	import { zod } from 'sveltekit-superforms/adapters';
@@ -88,6 +88,23 @@
 
 	// Compute for state changes
 	$: hasDiff = JSON.stringify(initialFormData) !== JSON.stringify($formData);
+
+	// If the record is new
+	if (collectionType === 'auth') {
+		if (!record) {
+			schema.splice(0, 0, { name: 'username', type: 'text' });
+			schema.push({ name: 'email', type: 'email' });
+			schema.push({ name: 'password', type: 'password', label: 'Password' });
+			schema.push({ name: 'passwordConfirm', type: 'password', label: 'Password confirm' });
+			schema.push({ name: 'verified', type: 'bool' });
+		} else {
+			schema.splice(0, 0, { name: 'username', type: 'text' });
+			schema.push({ name: 'email', type: 'email' });
+			schema.push({ name: 'password', type: 'password', label: 'New Password' });
+			schema.push({ name: 'passwordConfirm', type: 'password', label: 'Confirm New Password' });
+			schema.push({ name: 'verified', type: 'bool' });
+		}
+	}
 </script>
 
 <main
@@ -122,7 +139,7 @@
 							<Form.Label class="block">
 								<span class="text-muted-foreground">
 									<svelte:component this={fieldIcons[entry.type]} class="inline w-4" />
-									{entry.name}
+									{entry.label || entry.name}
 
 									{#if entry.type === 'date'}
 										<span class="text-xs text-muted-foreground">(UTC)</span>

@@ -1,6 +1,7 @@
 import type { PageLoad } from './$types';
 import { auth } from '$lib/stores';
 import type { RecordModel } from 'pocketbase';
+import type { CollectionSchema } from '$lib/types';
 
 export const load: PageLoad = async ({ params, parent, fetch }) => {
 	const { collections } = await parent();
@@ -21,25 +22,9 @@ export const load: PageLoad = async ({ params, parent, fetch }) => {
 			.getOne(params.recordId, { fetch, expand: findRelationFields.join(',') });
 	}
 
-	// Add password field to auth collection
-	if (collection?.type === 'auth') {
-		// Add password field to auth collection
-		if (!record) {
-			collection?.schema.push({ name: 'password', type: 'password' });
-			collection?.schema.push({ name: 'passwordConfirm', type: 'password' });
-		}
-
-		if (!collection?.schema.find((field) => field.name === 'email')) {
-			collection?.schema.push({ name: 'email', type: 'email' });
-		}
-
-		if (!collection?.schema.find((field) => field.name === 'verified')) {
-			collection?.schema.push({ name: 'verified', type: 'bool' });
-		}
-	}
-
 	return {
 		record,
-		schema: collection?.schema || []
+		collectionType: collection?.type,
+		schema: [...(collection?.schema || [])]
 	};
 };
