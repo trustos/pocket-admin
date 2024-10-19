@@ -25,10 +25,17 @@ export const load: PageLoad = async ({ params, parent, fetch }) => {
 	if (collection?.type === 'auth') {
 		// Add password field to auth collection
 		if (!record) {
-			// collection?.schema.push({ name: 'email', type: 'email' });
 			collection?.schema.push({ name: 'password', type: 'text' });
 			collection?.schema.push({ name: 'passwordConfirm', type: 'text' });
 			// collection?.schema.push({ name: 'verified', type: 'bool' });
+		}
+
+		if (!collection?.schema.find((field) => field.name === 'email')) {
+			collection?.schema.push({ name: 'email', type: 'email' });
+		}
+
+		if (!collection?.schema.find((field) => field.name === 'verified')) {
+			collection?.schema.push({ name: 'verified', type: 'bool' });
 		}
 	}
 

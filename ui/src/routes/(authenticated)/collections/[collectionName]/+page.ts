@@ -29,8 +29,13 @@ export const load: PageLoad = async ({ params, fetch, parent, url }) => {
 			});
 
 		if (collectionWithSchema?.schema && collectionWithSchema?.type === 'auth') {
-			collectionWithSchema.schema.push({ name: 'email', type: 'email' });
-			collectionWithSchema.schema.push({ name: 'verified', type: 'bool' });
+			if (!collectionWithSchema?.schema.find((field) => field.name === 'email')) {
+				collectionWithSchema.schema.push({ name: 'email', type: 'email' });
+			}
+
+			if (!collectionWithSchema?.schema.find((field) => field.name === 'verified')) {
+				collectionWithSchema.schema.push({ name: 'verified', type: 'bool' });
+			}
 		}
 
 		const schema: CollectionSchema = [
