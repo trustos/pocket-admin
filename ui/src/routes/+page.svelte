@@ -1,4 +1,12 @@
 <script lang="ts">
+	// import { auth } from '$lib/stores';
+
+	// const pageResult = async () =>
+	// 	await auth.pb.logs.getList(1, 20, {
+	// 		filter: 'data.status >= 400'
+	// 	});
+
+	// console.log(pageResult());
 </script>
 
 <main

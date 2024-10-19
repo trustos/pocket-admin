@@ -33,7 +33,7 @@ export const load: LayoutLoad = async ({ fetch }) => {
 	const defineFieldsToShowInTable = [
 		{ name: 'name', type: 'text' },
 		{ name: 'type', type: 'text' }
-	] as unknown as CollectionSchema[];
+	] as unknown as CollectionSchema;
 
 	return {
 		collections: filteredCollections,

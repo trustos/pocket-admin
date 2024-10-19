@@ -6,4 +6,4 @@
 	export let value: RecordModel[keyof RecordModel];
 </script>
 
-<Input {...attrs} bind:value />
+<Input {...attrs} bind:value autocomplete="off" />
