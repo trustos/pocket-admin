@@ -2,6 +2,7 @@
 	import {
 		CommonRenderer,
 		TextRenderer,
+		PasswordRenderer,
 		FileRenderer,
 		NumberRenderer,
 		BoolRenderer,
@@ -29,6 +30,8 @@
 <!-- Use the type guard directly in the if-block to ensure TypeScript narrows the type properly -->
 {#if type === 'text'}
 	<TextRenderer {attrs} bind:value />
+{:else if type === 'password'}
+	<PasswordRenderer {attrs} bind:value />
 {:else if type === 'file'}
 	<FileRenderer {options} {form} bind:value {attrs} {record} />
 {:else if type === 'editor'}

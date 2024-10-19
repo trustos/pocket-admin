@@ -1,5 +1,6 @@
 export { default as CommonRenderer } from '$lib/components/record/renderers/common.svelte';
-export { default as TextRenderer } from '$lib/components/record/renderers/common.svelte';
+export { default as TextRenderer } from '$lib/components/record/renderers/text.svelte';
+export { default as PasswordRenderer } from '$lib/components/record/renderers/password.svelte';
 export { default as FileRenderer } from '$lib/components/record/renderers/file/file.svelte';
 export { default as NumberRenderer } from '$lib/components/record/renderers/number.svelte';
 export { default as BoolRenderer } from '$lib/components/record/renderers/bool.svelte';

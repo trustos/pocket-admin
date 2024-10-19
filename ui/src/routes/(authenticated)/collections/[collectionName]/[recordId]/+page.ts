@@ -25,9 +25,8 @@ export const load: PageLoad = async ({ params, parent, fetch }) => {
 	if (collection?.type === 'auth') {
 		// Add password field to auth collection
 		if (!record) {
-			collection?.schema.push({ name: 'password', type: 'text' });
-			collection?.schema.push({ name: 'passwordConfirm', type: 'text' });
-			// collection?.schema.push({ name: 'verified', type: 'bool' });
+			collection?.schema.push({ name: 'password', type: 'password' });
+			collection?.schema.push({ name: 'passwordConfirm', type: 'password' });
 		}
 
 		if (!collection?.schema.find((field) => field.name === 'email')) {

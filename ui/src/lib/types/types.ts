@@ -16,6 +16,7 @@ export type SchemaFiledType =
 	| 'date'
 	| 'select'
 	| 'relation'
+	| 'password'
 	| 'json';
 
 export type SchemaField = {
