@@ -21,6 +21,17 @@ export const load: PageLoad = async ({ params, parent, fetch }) => {
 			.getOne(params.recordId, { fetch, expand: findRelationFields.join(',') });
 	}
 
+	// Add password field to auth collection
+	if (collection?.type === 'auth') {
+		// Add password field to auth collection
+		if (!record) {
+			// collection?.schema.push({ name: 'email', type: 'email' });
+			collection?.schema.push({ name: 'password', type: 'text' });
+			collection?.schema.push({ name: 'passwordConfirm', type: 'text' });
+			// collection?.schema.push({ name: 'verified', type: 'bool' });
+		}
+	}
+
 	return {
 		record,
 		schema: collection?.schema || []

@@ -28,6 +28,11 @@ export const load: PageLoad = async ({ params, fetch, parent, url }) => {
 				sort: '-created'
 			});
 
+		if (collectionWithSchema?.schema && collectionWithSchema?.type === 'auth') {
+			collectionWithSchema.schema.push({ name: 'email', type: 'email' });
+			collectionWithSchema.schema.push({ name: 'verified', type: 'bool' });
+		}
+
 		const schema: CollectionSchema = [
 			{ name: 'id', type: 'id' },
 			...(collectionWithSchema?.schema || []),

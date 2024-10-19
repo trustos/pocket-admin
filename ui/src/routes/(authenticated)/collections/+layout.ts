@@ -1,10 +1,6 @@
 import { auth } from '$lib/stores';
 import type { LayoutLoad } from './$types';
-import type { Collection, CollectionSchema, ListResultCollection } from '$lib/types';
-
-type AuthCollectionSchema = {
-	password: string;
-} & CollectionSchema;
+import type { Collection, CollectionSchema } from '$lib/types';
 
 export const load: LayoutLoad = async ({ fetch }) => {
 	const collections = await auth.pb
@@ -34,11 +30,14 @@ export const load: LayoutLoad = async ({ fetch }) => {
 		};
 	}
 
-	const schema: CollectionSchema = [...(filteredCollections[0]?.schema || [])];
+	const defineFieldsToShowInTable = [
+		{ name: 'name', type: 'text' },
+		{ name: 'type', type: 'text' }
+	] as unknown as CollectionSchema[];
 
 	return {
 		collections: filteredCollections,
-		schema
+		schema: defineFieldsToShowInTable
 	};
 };
 

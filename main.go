@@ -60,7 +60,7 @@ func createAdminCollectionsView(app core.App) error {
 	collection := &models.Collection{}
 	collection.MarkAsNew()
 	collection.Id = "admin_collections"
-	collection.Name = "admin_collections"
+	collection.Name = "pa_collections"
 	collection.Type = models.CollectionTypeView
 	collection.ListRule = types.Pointer("")
 	collection.ViewRule = types.Pointer("")
@@ -78,7 +78,7 @@ func createAdminCollectionsView(app core.App) error {
     NULL AS updateRule,
     NULL AS deleteRule
 	FROM _collections
-	WHERE name = 'admin_collections'`,
+	WHERE id = 'admin_collections'`,
 	})
 
 	return app.Dao().SaveCollection(collection)
@@ -92,7 +92,8 @@ func createAdminRolesCollection(app core.App) error {
 
 	collection = &models.Collection{}
 	collection.MarkAsNew()
-	collection.Name = "admin_roles"
+	collection.Id = "admin_roles"
+	collection.Name = "pa_roles"
 	collection.Type = models.CollectionTypeBase
 	collection.ListRule = types.Pointer("@request.auth.role.name = 'admin'")
 	collection.ViewRule = types.Pointer("@request.auth.role.name = 'admin'")
@@ -147,10 +148,22 @@ func updateUsersCollection(app core.App) error {
 		}
 
 		usersCollection.Schema.AddField(roleField)
+	}
 
-		if err := app.Dao().SaveCollection(usersCollection); err != nil {
-			return err
-		}
+	// Update the rules to allow admins to view and manage all users
+	newRule := "id = @request.auth.id || @request.auth.role.name = 'admin'"
+	usersCollection.ListRule = types.Pointer(newRule)
+	usersCollection.ViewRule = types.Pointer(newRule)
+	usersCollection.UpdateRule = types.Pointer(newRule)
+	usersCollection.DeleteRule = types.Pointer(newRule)
+
+	// Update AuthOptions
+	authOptions := usersCollection.AuthOptions()
+	authOptions.ManageRule = types.Pointer("@request.auth.role.name = 'admin'")
+	usersCollection.SetOptions(authOptions)
+
+	if err := app.Dao().SaveCollection(usersCollection); err != nil {
+		return err
 	}
 
 	return nil
@@ -287,7 +300,7 @@ func main() {
 
 	app.OnModelBeforeCreate().Add(func(e *core.ModelEvent) error {
 		if collection, ok := e.Model.(*models.Collection); ok {
-			if collection.Type == models.CollectionTypeBase && collection.Name != "users" && collection.Name != "admin_roles" {
+			if collection.Type == models.CollectionTypeBase && collection.Name != "users" && collection.Id != "admin_roles" {
 				collection.ListRule = types.Pointer("@request.auth.role.name = 'admin'")
 				collection.ViewRule = types.Pointer("@request.auth.role.name = 'admin'")
 				collection.CreateRule = types.Pointer("@request.auth.role.name = 'admin'")
