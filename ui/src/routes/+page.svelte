@@ -54,20 +54,12 @@
 
 	const colorAccessor = (d: CollectionData) => collectionColors.get(d.name) || '#FFA500'; // Default to orange if no color assigned
 
-	function getYAxisTicks(data: CollectionData[]) {
-		const maxCount = Math.max(...data.map((d) => d.record_count));
-		const tickCount = Math.min(maxCount, 5);
-		return Array.from({ length: tickCount + 1 }, (_, i) => Math.round((i * maxCount) / tickCount));
-	}
-
-	$: yAxisTicks = getYAxisTicks(topCollections);
-
 	// Tooltip triggers
 	const triggers = {
 		[StackedBar.selectors.bar]: (d: CollectionData) => `
             <div>
                 <strong>Collection:</strong> ${d.name}<br>
-                <strong>Record Count:</strong> ${d.record_count}<br>
+                <strong>Records Count:</strong> ${d.record_count}<br>
                 <strong>Type:</strong> ${d.type}
             </div>
         `
@@ -75,9 +67,6 @@
 
 	// X-axis tick format function
 	const xAxisTickFormat = (i: number) => topCollections[i]?.name || '';
-
-	// Y-axis tick format function
-	const yAxisTickFormat = (d: number) => d.toString();
 
 	// Run the function when the component mounts
 	import { onMount } from 'svelte';
@@ -90,8 +79,8 @@
 	class="grid flex-1 items-start gap-4 p-4 sm:px-6 sm:py-0 md:gap-8 lg:grid-cols-3 xl:grid-cols-3"
 >
 	<div class="col-span-3">
-		<div class="mb-4">Top 5 Collections by Record Count</div>
-		<VisXYContainer data={topCollections} height={300} width={700}>
+		<div class="mb-4">Top 5 Collections by Records Count</div>
+		<VisXYContainer data={topCollections} height={300} width={400}>
 			<VisStackedBar x={xAccessor} y={[yAccessor]} {keys} color={colorAccessor} />
 			<VisAxis gridLine={false} type="x" tickFormat={xAxisTickFormat} />
 			<VisTooltip {triggers} />
