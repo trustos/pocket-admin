@@ -23,15 +23,17 @@
 	<Sheet.Content side="left" class="sm:max-w-xs">
 		<nav class="grid gap-6 text-lg font-medium">
 			{#each menu as item}
-				<a
-					href={`${base}${item.href}`}
-					class="flex items-center gap-4 px-2.5 {isActive(item.href)
-						? 'text-foreground'
-						: 'text-muted-foreground hover:text-foreground'}"
-				>
-					<svelte:component this={item.icon} class="h-5 w-5" />
-					{item.name || ''}
-				</a>
+				<Sheet.Close>
+					<a
+						href={`${base}${item.href}`}
+						class="flex items-center gap-4 px-2.5 {isActive(item.href)
+							? 'text-foreground'
+							: 'text-muted-foreground hover:text-foreground'}"
+					>
+						<svelte:component this={item.icon} class="h-5 w-5" />
+						{item.name || ''}
+					</a>
+				</Sheet.Close>
 			{/each}
 		</nav>
 	</Sheet.Content>

@@ -277,7 +277,7 @@
 			<Card.Title>{title}</Card.Title>
 			<Card.Description>{description}</Card.Description>
 		</div>
-		<div class="text-center">
+		<div class="text-right md:text-center">
 			<slot name="action"></slot>
 		</div>
 	</Card.Header>

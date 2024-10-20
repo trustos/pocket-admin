@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"sort"
 	"strings"
 	"time"
 
@@ -13,6 +14,7 @@ import (
 
 	"github.com/labstack/echo/v5"
 	"github.com/labstack/echo/v5/middleware"
+	"github.com/pocketbase/dbx"
 	"github.com/pocketbase/pocketbase"
 	"github.com/pocketbase/pocketbase/apis"
 	"github.com/pocketbase/pocketbase/core"
@@ -233,6 +235,127 @@ func setupCollections(app core.App) error {
 	return nil
 }
 
+func createStatsHandler(app core.App) echo.HandlerFunc {
+	return func(c echo.Context) error {
+		// Parse time range
+		timeRange := c.QueryParam("timeRange")
+		var since time.Time
+		switch timeRange {
+		case "minute":
+			since = time.Now().Add(-1 * time.Minute)
+		case "hour":
+			since = time.Now().Add(-1 * time.Hour)
+		case "day":
+			since = time.Now().AddDate(0, 0, -1)
+		default:
+			since = time.Now().AddDate(0, 0, -1) // Default to last 24 hours
+		}
+
+		// Query logs
+		logs := []models.Log{}
+		err := app.LogsDao().LogQuery().
+			Where(dbx.And(
+				dbx.NewExp("created >= {:since}", dbx.Params{"since": since}),
+				dbx.NewExp("json_extract(data, '$.method') != ''"),
+			)).
+			OrderBy("created DESC").
+			All(&logs)
+
+		if err != nil {
+			return c.JSON(http.StatusInternalServerError, map[string]string{"error": err.Error()})
+		}
+
+		// Process logs
+		totalRequests := len(logs)
+		collectionCounts := make(map[string]int)
+		methodCounts := make(map[string]int)
+
+		for _, log := range logs {
+			// Count collection access
+			if collection, ok := log.Data["url"].(string); ok {
+				collectionCounts[collection]++
+			}
+
+			// Count request methods
+			if method, ok := log.Data["method"].(string); ok {
+				methodCounts[method]++
+			}
+		}
+
+		// Prepare response
+		stats := map[string]interface{}{
+			"totalRequests":      totalRequests,
+			"requestsPerUnit":    float64(totalRequests) / time.Since(since).Hours(),
+			"topEndpoints":       getTopN(collectionCounts, 10),
+			"methodDistribution": methodCounts,
+		}
+
+		return c.JSON(http.StatusOK, stats)
+	}
+}
+
+// Helper function to get top N items from a map
+func getTopN(m map[string]int, n int) map[string]int {
+	result := make(map[string]int)
+	for k, v := range m {
+		if len(result) < n {
+			result[k] = v
+		} else {
+			for rk, rv := range result {
+				if v > rv {
+					delete(result, rk)
+					result[k] = v
+					break
+				}
+			}
+		}
+	}
+	return result
+}
+
+func getTopCollectionsByRecordCount(app core.App) ([]map[string]interface{}, error) {
+	// Fetch both base and auth collections
+	baseCollections, err := app.Dao().FindCollectionsByType("base")
+	if err != nil {
+		return nil, fmt.Errorf("failed to fetch base collections: %v", err)
+	}
+
+	authCollections, err := app.Dao().FindCollectionsByType("auth")
+	if err != nil {
+		return nil, fmt.Errorf("failed to fetch auth collections: %v", err)
+	}
+
+	// Combine the collections
+	collections := append(baseCollections, authCollections...)
+
+	var results []map[string]interface{}
+	for _, collection := range collections {
+		query := app.Dao().RecordQuery(collection)
+		var count int
+		err := query.Select("count(*)").Row(&count)
+		if err != nil {
+			return nil, fmt.Errorf("failed to count records for collection %s: %v", collection.Name, err)
+		}
+
+		results = append(results, map[string]interface{}{
+			"name":         collection.Name,
+			"type":         collection.Type, // Include the collection type
+			"record_count": count,
+		})
+	}
+
+	// Sort results by record count in descending order
+	sort.Slice(results, func(i, j int) bool {
+		return results[i]["record_count"].(int) > results[j]["record_count"].(int)
+	})
+
+	// Return top 5 or all if less than 5
+	if len(results) > 5 {
+		return results[:5], nil
+	}
+	return results, nil
+}
+
 func main() {
 	app := pocketbase.New()
 
@@ -273,6 +396,7 @@ func main() {
 
 	app.OnAfterBootstrap().PreAdd(func(e *core.BootstrapEvent) error {
 		app.Dao().ModelQueryTimeout = time.Duration(queryTimeout) * time.Second
+
 		return nil
 	})
 
@@ -294,6 +418,28 @@ func main() {
 			time.Sleep(100 * time.Millisecond)
 			fmt.Printf("└─ Pocket Admin UI: %s%s\n", serverAddress, pocketAdminPath)
 		}()
+
+		// Add the new stats endpoint
+		e.Router.AddRoute(echo.Route{
+			Method:  http.MethodGet,
+			Path:    "/api/stats",
+			Handler: createStatsHandler(app),
+		})
+
+		e.Router.AddRoute(echo.Route{
+			Method: http.MethodGet,
+			Path:   "/api/top_collections",
+			Handler: func(c echo.Context) error {
+				topCollections, err := getTopCollectionsByRecordCount(app)
+				if err != nil {
+					return c.JSON(http.StatusInternalServerError, map[string]string{"error": err.Error()})
+				}
+				return c.JSON(http.StatusOK, topCollections)
+			},
+			Middlewares: []echo.MiddlewareFunc{
+				apis.RequireRecordAuth(),
+			},
+		})
 
 		return nil
 	})

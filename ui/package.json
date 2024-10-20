@@ -51,6 +51,8 @@
 		"@tiptap/extension-underline": "^2.7.4",
 		"@tiptap/pm": "^2.7.4",
 		"@tiptap/starter-kit": "^2.7.4",
+		"@unovis/svelte": "^1.4.4",
+		"@unovis/ts": "^1.4.4",
 		"bits-ui": "^0.21.15",
 		"clsx": "^2.1.1",
 		"cmdk-sv": "^0.0.18",
