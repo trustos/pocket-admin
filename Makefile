@@ -31,6 +31,10 @@ else
     ARCH := unknown
 endif
 
+build-linux-arm64:
+	@echo "Building pocket-admin for Linux ARM64"
+	GOOS=linux GOARCH=arm64 CGO_ENABLED=0 go build -o pocket-admin-linux-arm64 main.go
+
 build:
 	@echo "Detected OS: $(OS)"
 	@if [ "$(OS)" = "unknown" ]; then \
@@ -61,4 +65,4 @@ run:
 clean:
 	rm go.mod go.sum
 
-.PHONY: build init serve run clean
+.PHONY: build init serve run clean build-linux-arm64
