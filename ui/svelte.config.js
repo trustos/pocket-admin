@@ -23,9 +23,6 @@ const config = {
 			relative: true,
 			base: '/admin'
 		}
-		// prerender: {
-		// 	entries: ['*']
-		// }
 	}
 };
 

@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"io/fs"
 	"log"
 	"net/http"
 	"os"
@@ -42,6 +43,16 @@ func indexFallbackMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
 }
 
 func bindStaticAdminUI(e *core.ServeEvent) error {
+	// Debug: List embedded files
+	entries, err := fs.ReadDir(ui.DistDirFS, ".")
+	if err != nil {
+		log.Printf("Error reading embedded files: %v", err)
+	} else {
+		for _, entry := range entries {
+			log.Printf("Embedded file: %s", entry.Name())
+		}
+	}
+
 	e.Router.GET(
 		strings.TrimRight(pocketAdminPath, "/"),
 		func(c echo.Context) error {
