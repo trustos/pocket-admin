@@ -26,12 +26,12 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v5
         with:
-          go-version: "1.23.0"
+          go-version: ">=1.22.8"
 
       - name: Build Admin dashboard UI
         run: |
           if [ -d "./ui" ]; then
-            npm --prefix=./ui i && npm --prefix=./ui run build
+            npm --prefix=./ui ci && npm --prefix=./ui npm run sync && npm --prefix=./ui run build
           fi
 
       - name: Run GoReleaser
