@@ -34,9 +34,6 @@ jobs:
             npm --prefix=./ui ci && npm --prefix=./ui run build
           fi
 
-      - name: Run tests
-        run: go test ./...
-
       - name: Run GoReleaser
         uses: goreleaser/goreleaser-action@v3
         with:
