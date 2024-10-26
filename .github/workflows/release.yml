@@ -31,7 +31,10 @@ jobs:
       - name: Build Admin dashboard UI
         run: |
           if [ -d "./ui" ]; then
-            npm --prefix=./ui ci && npm --prefix=./ui run sync && npm --prefix=./ui run build
+            cd ui
+            npm ci
+            npm run build
+            cd ..
           fi
 
       - name: Run GoReleaser
