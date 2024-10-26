@@ -1,13 +1,12 @@
 import PocketBase from 'pocketbase';
 import { writable } from 'svelte/store';
-import { PUBLIC_POCKETBASE_URL } from '$env/static/public';
 import { goto } from '$app/navigation';
 import { base } from '$app/paths';
 import { APP_URL } from '$lib/types/constants';
 import type { User } from '$lib/types';
 
 function createAuthStore() {
-	const pb = new PocketBase(PUBLIC_POCKETBASE_URL);
+	const pb = new PocketBase();
 	const { subscribe, set } = writable<User | null>(null);
 
 	return {
