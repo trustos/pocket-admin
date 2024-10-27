@@ -33,7 +33,7 @@ jobs:
           if [ -d "./ui" ]; then
             cd ui
             npm ci
-            npm run check
+            npm run sync
             npm run build
             cd ..
           fi
