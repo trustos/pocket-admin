@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"io/fs"
 	"log"
 	"net/http"
 	"os"
@@ -43,30 +42,48 @@ func indexFallbackMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
 }
 
 func bindStaticAdminUI(e *core.ServeEvent) error {
-	// Debug: List embedded files
-	entries, err := fs.ReadDir(ui.DistDirFS, ".")
-	if err != nil {
-		log.Printf("Error reading embedded files: %v", err)
-	} else {
-		for _, entry := range entries {
-			log.Printf("Embedded file: %s", entry.Name())
-		}
-	}
-
+	// Redirect /admin to /admin/
 	e.Router.GET(
 		strings.TrimRight(pocketAdminPath, "/"),
 		func(c echo.Context) error {
-			return c.Redirect(http.StatusTemporaryRedirect, strings.TrimLeft(pocketAdminPath, "/"))
+			return c.Redirect(http.StatusTemporaryRedirect, pocketAdminPath)
 		},
 	)
 
+	// Serve static files and handle SPA routes
 	e.Router.GET(
 		pocketAdminPath+"*",
-		echo.StaticDirectoryHandler(ui.DistDirFS, false),
+		func(c echo.Context) error {
+			path := c.Request().URL.Path
+			if strings.HasPrefix(path, pocketAdminPath) {
+				// Try to serve the actual file first
+				err := echo.StaticDirectoryHandler(ui.DistDirFS, true)(c)
+				if err != nil {
+					// If file not found, serve index.html for SPA routing
+					return c.FileFS("index.html", ui.DistDirFS)
+				}
+				return err
+			}
+			return echo.ErrNotFound
+		},
 		middleware.Gzip(),
 	)
 
 	return nil
+	// e.Router.GET(
+	// 	strings.TrimRight(pocketAdminPath, "/"),
+	// 	func(c echo.Context) error {
+	// 		return c.Redirect(http.StatusTemporaryRedirect, strings.TrimLeft(pocketAdminPath, "/"))
+	// 	},
+	// )
+
+	// e.Router.GET(
+	// 	pocketAdminPath+"*",
+	// 	echo.StaticDirectoryHandler(ui.DistDirFS, false),
+	// 	middleware.Gzip(),
+	// )
+
+	// return nil
 }
 
 func createAdminCollectionsView(app core.App) error {
