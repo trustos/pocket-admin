@@ -23,6 +23,13 @@ const config = {
 			relative: true,
 			base: '/admin'
 		}
+	},
+	// Suppresses the warning about unused CSS selectors
+	onwarn: (warning, handler) => {
+		const { code } = warning;
+		if (code === 'css-unused-selector') return;
+
+		handler(warning);
 	}
 };
 

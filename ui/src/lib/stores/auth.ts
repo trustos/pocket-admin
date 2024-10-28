@@ -6,7 +6,9 @@ import { APP_URL } from '$lib/types/constants';
 import type { User } from '$lib/types';
 
 function createAuthStore() {
-	const pb = new PocketBase();
+	// Check if we're in development mode
+	const pb = new PocketBase(import.meta.env.DEV ? 'http://localhost:8090' : undefined);
+
 	const { subscribe, set } = writable<User | null>(null);
 
 	return {
