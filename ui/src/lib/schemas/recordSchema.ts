@@ -100,10 +100,10 @@ const generateZodSchema = (fields: CollectionSchema) => {
 			case 'select':
 				if (field?.options?.values && field.options.values.length > 0) {
 					const validValues = field.options.values as [string, ...string[]];
-					fieldSchema = z.union([z.enum(validValues), z.array(z.enum(validValues))]);
+					fieldSchema = z.union([z.enum(validValues), z.array(z.enum(validValues))]).default('');
 				} else {
 					// Fallback to any string if no valid values are provided
-					fieldSchema = z.union([z.string(), z.array(z.string())]);
+					fieldSchema = z.union([z.string(), z.array(z.string())]).default('');
 				}
 				break;
 
