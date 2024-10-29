@@ -1,12 +1,39 @@
 package types
 
-import "time"
+// import "time"
 
-// WebhookPayload represents the data sent to webhook endpoints
+type WebhookLog struct {
+	ID        string `json:"id"`
+	WebhookID string `json:"webhookId"`
+	Event     string `json:"event"`
+	Status    string `json:"status"`
+	Response  string `json:"response"`
+	Timestamp string `json:"timestamp"` // Changed from time.Time to string
+	Retries   int    `json:"retries"`
+}
+
 type WebhookPayload struct {
 	Event     string      `json:"event"`
-	Timestamp time.Time   `json:"timestamp"`
+	Timestamp string      `json:"timestamp"` // Changed from time.Time to string
 	Data      interface{} `json:"data"`
+}
+
+// WebhookEntry remains the same but update timestamps
+type WebhookEntry struct {
+	ID         string            `json:"id"`
+	Name       string            `json:"name"`
+	URL        string            `json:"url"`
+	Headers    map[string]string `json:"headers"`
+	Events     []string          `json:"events"`
+	Enabled    bool              `json:"enabled"`
+	RetryCount int               `json:"retryCount"`
+	CreatedAt  string            `json:"createdAt"` // Changed from time.Time to string
+	UpdatedAt  string            `json:"updatedAt"` // Changed from time.Time to string
+}
+
+type WebhookSettings struct {
+	Entries []WebhookEntry `json:"entries"`
+	Logs    []WebhookLog   `json:"logs"`
 }
 
 // WebhookConfig represents webhook configuration

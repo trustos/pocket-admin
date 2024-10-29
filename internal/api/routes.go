@@ -54,6 +54,9 @@ func RegisterRoutes(app core.App, e *core.ServeEvent) error {
 	apiGroup.GET("/stats", handlers.CreateStatsHandler(app))
 	apiGroup.GET("/top_collections", handlers.GetTopCollectionsHandler(app), apis.RequireRecordAuth())
 
+	// Webhook reload endpoint
+	apiGroup.POST("/webhooks/reload", handlers.ReloadWebhooksHandler(app), apis.RequireRecordAuth())
+
 	return nil
 }
 
