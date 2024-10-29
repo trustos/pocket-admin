@@ -50,3 +50,9 @@ export type User = AuthModel & {
 	paRole: string;
 	// You can add additional properties here if needed
 };
+
+export type SideNavItem = {
+	href: string;
+	title: string;
+	icon: unknown;
+};
