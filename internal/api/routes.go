@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"pocket-admin/internal/api/handlers"
+	"pocket-admin/internal/api/middleware"
 	"pocket-admin/ui"
 
 	"github.com/labstack/echo/v5"
@@ -51,6 +52,7 @@ func RegisterRoutes(app core.App, e *core.ServeEvent) error {
 
 	// API routes
 	apiGroup := e.Router.Group("/api")
+	apiGroup.Use(middleware.ValidateWebhookSettings)
 	apiGroup.GET("/stats", handlers.CreateStatsHandler(app))
 	apiGroup.GET("/top_collections", handlers.GetTopCollectionsHandler(app), apis.RequireRecordAuth())
 

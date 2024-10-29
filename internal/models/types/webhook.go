@@ -1,5 +1,11 @@
 package types
 
+import (
+	"fmt"
+
+	"github.com/google/uuid"
+)
+
 // import "time"
 
 type WebhookLog struct {
@@ -20,15 +26,15 @@ type WebhookPayload struct {
 
 // WebhookEntry remains the same but update timestamps
 type WebhookEntry struct {
-	ID         string            `json:"id"`
+	ID         string            `json:"id"` // Required
 	Name       string            `json:"name"`
 	URL        string            `json:"url"`
 	Headers    map[string]string `json:"headers"`
 	Events     []string          `json:"events"`
 	Enabled    bool              `json:"enabled"`
 	RetryCount int               `json:"retryCount"`
-	CreatedAt  string            `json:"createdAt"` // Changed from time.Time to string
-	UpdatedAt  string            `json:"updatedAt"` // Changed from time.Time to string
+	CreatedAt  string            `json:"createdAt"`
+	UpdatedAt  string            `json:"updatedAt"`
 }
 
 type WebhookSettings struct {
@@ -57,4 +63,45 @@ type TopCollection struct {
 	Name        string `json:"name"`
 	Type        string `json:"type"`
 	RecordCount int    `json:"record_count"`
+}
+
+// Add validation method
+func (w *WebhookEntry) Validate() error {
+	if w.ID == "" {
+		w.ID = uuid.New().String()
+	}
+	if w.Name == "" {
+		return fmt.Errorf("webhook name is required")
+	}
+	if w.URL == "" {
+		return fmt.Errorf("webhook URL is required")
+	}
+	if len(w.Events) == 0 {
+		return fmt.Errorf("at least one event is required")
+	}
+	return nil
+}
+
+// Add webhook settings validation
+func (ws *WebhookSettings) ValidateAndEnsureIDs() error {
+	usedIDs := make(map[string]bool)
+
+	for i := range ws.Entries {
+		// Ensure ID exists
+		if ws.Entries[i].ID == "" {
+			ws.Entries[i].ID = uuid.New().String()
+		}
+
+		// Check for duplicate IDs
+		if usedIDs[ws.Entries[i].ID] {
+			return fmt.Errorf("duplicate webhook ID found: %s", ws.Entries[i].ID)
+		}
+		usedIDs[ws.Entries[i].ID] = true
+
+		// Validate other fields
+		if err := ws.Entries[i].Validate(); err != nil {
+			return fmt.Errorf("invalid webhook entry %s: %w", ws.Entries[i].ID, err)
+		}
+	}
+	return nil
 }

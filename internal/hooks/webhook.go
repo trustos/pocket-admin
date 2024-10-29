@@ -83,6 +83,11 @@ func triggerWebhooks(app *pocketbase.PocketBase, webhookService *service.Webhook
 		return fmt.Errorf("failed to unmarshal webhook settings: %w", err)
 	}
 
+	if err := settings.ValidateAndEnsureIDs(); err != nil {
+		log.Printf("Invalid webhook configuration: %v", err)
+		return fmt.Errorf("invalid webhook configuration: %w", err)
+	}
+
 	if len(settings.Entries) == 0 {
 		log.Printf("No webhook entries found")
 		return nil
