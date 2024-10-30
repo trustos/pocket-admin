@@ -9,6 +9,9 @@ export const load: LayoutLoad = async ({ fetch }) => {
 
 	let filteredCollections = collections.items;
 
+	//Hide pa_settings from the list of collections as we will manage those separately
+	filteredCollections = filteredCollections.filter((c: Collection) => c.name !== 'pa_settings');
+
 	if (!auth.isPocketAdmin) {
 		// Filter out base collections and admin_roles collection
 		filteredCollections = filteredCollections.filter(

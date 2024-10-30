@@ -14,6 +14,7 @@
 	import Plus from 'lucide-svelte/icons/plus';
 	import type { WebhookEntry, WebhookLog, PASettings } from '$lib/types';
 	import { BoolRenderer } from '$lib/components/table/renderers';
+	import { ClientResponseError } from 'pocketbase';
 
 	export let entries: WebhookEntry[] = [];
 	export let logs: WebhookLog[] = [];
@@ -42,10 +43,10 @@
 			});
 
 			dataStore.set(updatedWebhooks.entries);
-			SuccessToast('Webhook deleted successfully');
+			SuccessToast(`Webhook "${webhook.name}" deleted successfully`);
 		} catch (error: unknown) {
 			const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-			ErrorToast(`Failed to delete webhook: ${errorMessage}`);
+			ErrorToast(`Failed to delete webhook ${webhook.name}: ${errorMessage}`);
 		}
 	}
 
@@ -120,11 +121,6 @@
 								)
 							};
 
-							// Log the payload being sent
-							console.log('Updating webhook with payload:', {
-								webhooks: updatedWebhooks
-							});
-
 							await auth.pb.collection('pa_settings').update(settings.id, {
 								webhooks: updatedWebhooks
 							});
@@ -132,10 +128,10 @@
 							// Update the store with the new data
 							dataStore.set(updatedWebhooks.entries);
 
-							SuccessToast(`Webhook ${newValue ? 'enabled' : 'disabled'}`);
+							SuccessToast(`Webhook ${rowData.name} ${newValue ? 'enabled' : 'disabled'}`);
 						} catch (error: unknown) {
 							const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-							ErrorToast(`Failed to update webhook: ${errorMessage}`);
+							ErrorToast(`Failed to update webhook ${tableRow.original.name}: ${errorMessage}`);
 						}
 					}
 				})
@@ -186,6 +182,20 @@
 			await auth.pb.collection('pa_settings').update(settings.id, {
 				webhooks: updatedWebhooks
 			});
+
+			// Call the reload endpoint
+			try {
+				const response = await auth.pb.send('/api/webhooks/reload', {
+					method: 'POST',
+					fetch
+				});
+
+				if (response) {
+					SuccessToast('Webhooks reloaded successfully');
+				}
+			} catch (reloadError) {
+				ErrorToast(`Failed to reload webhooks: ${(reloadError as ClientResponseError).message}`);
+			}
 
 			dataStore.set(updatedWebhooks.entries);
 			SuccessToast(`Webhook ${selectedWebhook ? 'updated' : 'created'} successfully`);
