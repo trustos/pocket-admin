@@ -20,21 +20,42 @@ func RegisterWebhookHooks(app *pocketbase.PocketBase, webhookService *service.We
 	log.Println("Registering webhook hooks...")
 
 	app.OnModelAfterCreate().Add(func(e *core.ModelEvent) error {
-		return triggerWebhooks(app, webhookService, "record.create", e.Model)
+		// Launch webhook trigger in a goroutine
+		go func() {
+			if err := triggerWebhooks(app, webhookService, "record.create", e.Model); err != nil {
+				log.Printf("Error triggering webhooks: %v", err)
+			}
+		}()
+		return nil // Return immediately
 	})
 
 	app.OnModelAfterUpdate().Add(func(e *core.ModelEvent) error {
-		return triggerWebhooks(app, webhookService, "record.update", e.Model)
+		// Launch webhook trigger in a goroutine
+		go func() {
+			if err := triggerWebhooks(app, webhookService, "record.update", e.Model); err != nil {
+				log.Printf("Error triggering webhooks: %v", err)
+			}
+		}()
+		return nil // Return immediately
 	})
 
 	app.OnModelAfterDelete().Add(func(e *core.ModelEvent) error {
-		return triggerWebhooks(app, webhookService, "record.delete", e.Model)
+		// Launch webhook trigger in a goroutine
+		go func() {
+			if err := triggerWebhooks(app, webhookService, "record.delete", e.Model); err != nil {
+				log.Printf("Error triggering webhooks: %v", err)
+			}
+		}()
+		return nil // Return immediately
 	})
 }
 
 func triggerWebhooks(app *pocketbase.PocketBase, webhookService *service.WebhookService, event string, model interface{}) error {
+	// Create a copy of the model to avoid potential race conditions
+	modelCopy := deepCopy(model) // You'll need to implement this function
+
 	// Skip webhook triggers for admin_settings collection to prevent infinite loops
-	if m, ok := model.(*models.Record); ok {
+	if m, ok := modelCopy.(*models.Record); ok {
 		if m.Collection().Name == "pa_settings" {
 			log.Printf("Skipping webhook trigger for admin_settings collection")
 			return nil
@@ -194,4 +215,33 @@ func triggerWebhooks(app *pocketbase.PocketBase, webhookService *service.Webhook
 	}
 
 	return nil
+}
+
+// Helper function to create a deep copy of the model
+func deepCopy(model interface{}) interface{} {
+	if model == nil {
+		return nil
+	}
+
+	// For Record type
+	if record, ok := model.(*models.Record); ok {
+		copiedRecord := *record // Create a shallow copy
+		return &copiedRecord
+	}
+
+	// For other types, you might want to implement specific copying logic
+	// or use encoding/json as a simple way to deep copy
+	data, err := json.Marshal(model)
+	if err != nil {
+		log.Printf("Error marshaling model for deep copy: %v", err)
+		return model
+	}
+
+	var copy interface{}
+	if err := json.Unmarshal(data, &copy); err != nil {
+		log.Printf("Error unmarshaling model for deep copy: %v", err)
+		return model
+	}
+
+	return copy
 }
