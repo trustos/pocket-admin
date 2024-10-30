@@ -10,7 +10,7 @@
 		DataTableCell,
 		DataTableCheckbox
 	} from '$lib/components/table';
-	import type { Collection, CollectionSchema } from '$lib/types';
+	import type { Collection, CollectionSchema, WebhookEntry } from '$lib/types';
 	import {
 		addPagination,
 		addSortBy,
@@ -34,7 +34,7 @@
 	import { ClientResponseError } from 'pocketbase';
 
 	// Props
-	export let data: Collection[] = [];
+	export let data: Collection[] | WebhookEntry[] = [];
 	export let schema: CollectionSchema = [];
 	export let title: string = '';
 	export let description: string = '';
