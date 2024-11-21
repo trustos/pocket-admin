@@ -62,7 +62,12 @@ serve:
 run:
 	./pocket-admin serve
 
+update-pocketbase:
+	go get -u github.com/pocketbase/pocketbase
+	go mod tidy
+	go list -m github.com/pocketbase/pocketbase
+
 clean:
 	rm go.mod go.sum
 
-.PHONY: build init serve run clean build-linux-arm64
+.PHONY: build init serve run clean build-linux-arm64 update-pocketbase
